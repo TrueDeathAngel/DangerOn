@@ -159,7 +159,7 @@ public class GameLogic
 
         TerminalPosition labelBoxTopLeft =
                 new TerminalPosition(map[0].length + 8, 0);
-        TerminalSize labelBoxSize = new TerminalSize(sizeLabel.length() + 2, 3);
+        TerminalSize labelBoxSize = new TerminalSize(sizeLabel.length() + 2, 5);
         TextGraphics textGraphics = screen.newTextGraphics();
 
         textGraphics.fillRectangle(labelBoxTopLeft, labelBoxSize, ' ');
@@ -167,5 +167,11 @@ public class GameLogic
         drawRectangle(new Point(map[0].length + 8, 0), new Point(map[0].length + sizeLabel.length() + 9, 2));
 
         textGraphics.putString(labelBoxTopLeft.withRelative(1, 1), sizeLabel);
+        textGraphics.putString(labelBoxTopLeft.withRelative(1, 4), "Controls:");
+        drawRectangle(new Point(map[0].length + 8, 5), new Point(map[0].length + 23, 9));
+        textGraphics.putString(labelBoxTopLeft.withRelative(1, 6), "d - attack");
+        textGraphics.putString(labelBoxTopLeft.withRelative(1, 7), "a - auto mode");
+        textGraphics.putString(labelBoxTopLeft.withRelative(1, 8), "r - reload map");
+
     }
 }

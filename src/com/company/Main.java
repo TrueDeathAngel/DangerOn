@@ -14,8 +14,8 @@ import static com.company.GameLogic.*;
 
 public class Main
 {
-    static String[] heroNames = {"Олежа", "Васян", "Женёк", "Жорик"};
-    static String[] weaponNames = {"Sword", "Axe", "Pickaxe", "Bow", "Crossbow", "Spear", "Dagger", "Mace", "Hammer", "Sickle"};
+    // static String[] heroNames = {"Олежа", "Васян", "Женёк", "Жорик"};
+    // static String[] weaponNames = {"Sword", "Axe", "Pickaxe", "Bow", "Crossbow", "Spear", "Dagger", "Mace", "Hammer", "Sickle"};
 
     public static DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
     public static Screen screen = null;
@@ -31,7 +31,7 @@ public class Main
             defaultTerminalFactory.setTerminalEmulatorTitle("DungerOn " + GameResources.version);
             try {
                 // Load a font and set its size
-                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("Hack-Regular.ttf")).deriveFont(12f);
+                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("Hack-Regular.ttf")).deriveFont(16f);
 
                 // Set the font for the terminal factory
                 defaultTerminalFactory.setTerminalEmulatorFontConfiguration(SwingTerminalFontConfiguration.newInstance(font));

@@ -1,10 +1,7 @@
 package com.company;
 
 import com.company.map.CellTypes;
-import com.company.map.MapFactory;
 import com.googlecode.lanterna.*;
-import com.googlecode.lanterna.input.KeyStroke;
-import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration;
@@ -29,44 +26,9 @@ public class Main
 
     public static void main(String[] args)
     {
-        /*int i = 1024 * 10;
-        int j = i + 1024;
-        while(i < j)
-        {
-            try
-            {
-                System.out.println(i + " " + (char) i);
-                i++;
-            }
-            catch(Exception e)
-            {
-                System.out.println(e);
-            }
-        }*/
-
-        /*CellTypes[][] map = MapFactory.createMap();
-
-        for (CellTypes[] row : map)
-        {
-            for (CellTypes cell : row)
-                switch (cell) {
-                    case EMPTY -> System.out.print(' ');
-                    case LAVA -> System.out.print(0);
-                    case VERTICAL_WALL -> System.out.print('║');
-                    case HORIZONTAL_WALL -> System.out.print('═');
-                    case TOP_LEFT_CORNER_WALL -> System.out.print('╔');
-                    case TOP_RIGHT_CORNER_WALL -> System.out.print('╗');
-                    case BOTTOM_RIGHT_CORNER_WALL -> System.out.print('╝');
-                    case BOTTOM_LEFT_CORNER_WALL -> System.out.print('╚');
-                }
-            System.out.println();
-        }*/
-
-        map = MapFactory.createMap();
-
         try
         {
-            defaultTerminalFactory.setTerminalEmulatorTitle("Game " + GameResources.version);
+            defaultTerminalFactory.setTerminalEmulatorTitle("DungerOn " + GameResources.version);
             try {
                 // Load a font and set its size
                 Font font = Font.createFont(Font.TRUETYPE_FONT, new File("Hack-Regular.ttf")).deriveFont(12f);
@@ -74,7 +36,7 @@ public class Main
                 // Set the font for the terminal factory
                 defaultTerminalFactory.setTerminalEmulatorFontConfiguration(SwingTerminalFontConfiguration.newInstance(font));
             }
-            // Handle exceptions :)
+            // Handle exception :)
             catch (FontFormatException e)
             {
                 System.out.println("Unable to set the font: Wrong font format");
@@ -87,7 +49,7 @@ public class Main
 
             terminalSize = screen.getTerminalSize();
 
-            GameLogic.start();
+            GameLogic.startGame();
 
             while (true)
             {
@@ -100,7 +62,8 @@ public class Main
 
                 if(gameOver) break;
 
-                drawMap();
+                try{drawMap();}
+                catch (ArrayIndexOutOfBoundsException e) {System.out.println("here");}
 
                 drawInfo();
 
@@ -117,7 +80,8 @@ public class Main
                     e.printStackTrace();
                 }
             }
-            GameLogic.controllers.forEach(Thread::stop);
+            enemiesControllers.forEach(Thread::stop);
+            gamePlayControllers.forEach(Thread::stop);
         }
 
         /*Random = new Random();
@@ -193,7 +157,5 @@ public class Main
         hero.addSpell(new Spell(new Fire()));
 
         hero.showSpells();*/
-
-
     }
 }

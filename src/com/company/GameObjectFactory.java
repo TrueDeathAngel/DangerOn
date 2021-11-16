@@ -1,7 +1,7 @@
 package com.company;
 
-import com.company.creature.Creature;
-import com.company.creature.Mob;
+import com.company.creatures.Creature;
+import com.company.creatures.Mob;
 
 import java.util.concurrent.ThreadLocalRandom;
 

@@ -1,69 +1,76 @@
 package com.company;
 
-import com.company.creature.*;
-import com.company.map.CellTypes;
+import com.company.creatures.*;
+import com.company.gameplay.EffectsController;
+import com.company.gameplay.KeyController;
+import com.company.map.MapFactory;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.ConcurrentModificationException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.Main.*;
+import static com.company.gameplay.EffectsController.getLavaColor;
 
 public class GameLogic
 {
     public static boolean autoMode = false;
 
-    public static ArrayList<Thread> controllers = new ArrayList<>();
+    public static ArrayList<Thread> enemiesControllers = new ArrayList<>();
+    public static ArrayList<Thread> gamePlayControllers = new ArrayList<>();
     public static KeyStroke pressedKey = null;
     public static ArrayList<Creature> creatures = new ArrayList<>();
 
     public static Hero hero = new Hero("Oleg", 250, 5, 10);
 
-    /*public static void attack(Mob attacker, Mob target)
+    public static void startGame()
     {
-        System.out.println("\n" + attacker.getName() + " is trying to attack " + target.getName());
-        if(ThreadLocalRandom.current().nextInt(20) + 1 > target.getDefencePoints())
-        {
-            float damage = DamagePerSecond(attacker);
-            target.receiveDamage(damage);
-            System.out.println(attacker.getName() + " deals damage equal to " + damage + " to " + target.getName());
-        }
-        else System.out.println(target.getName() + " dodges!");
-    }*/
+        refreshMap();
 
-    public static void start()
-    {
-        for(int i = 0; i < 15; i++)
-            creatures.add(GameObjectFactory.spawnCreature());
-        for(int i = 0; i < 5; i++)
-            creatures.add(GameObjectFactory.spawnMob());
+        gamePlayControllers.add(new Thread(new EffectsController()));
 
-        controllers.add(new Thread(new HeroController(hero)));
+        gamePlayControllers.add(new Thread(new HeroController(hero)));
 
-        controllers.add(new Thread(new KeyController()));
+        gamePlayControllers.add(new Thread(new KeyController()));
 
-        creatures.forEach((creature) -> controllers.add(new Thread(new CreatureController(creature))));
-
-        // Thread drawer = new Thread(() -> { while (true)
-        // {
-        //     GameLogic.drawField();
-        //     try
-        //     {
-        //         Thread.sleep(1000);
-        //     }
-        //     catch (InterruptedException e) {}
-        // }});
-
-        // drawer.start();
-
-        controllers.forEach(Thread::start);
+        gamePlayControllers.forEach(Thread::start);
     }
 
-    public static void drawMap()
+    public static void refreshMap()
+    {
+        map = MapFactory.createMap();
+        hero.setStartPosition();
+
+        addEnemies();
+
+        screen.clear();
+    }
+
+    public static void addEnemies()
+    {
+        enemiesControllers.forEach(Thread::stop);
+        enemiesControllers.clear();
+        creatures.clear();
+
+        int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms()) + 3;
+
+        for(int i = 0; i < 3 * numberOfEnemies / 4; i++)
+            creatures.add(GameObjectFactory.spawnCreature());
+        for(int i = 0; i < numberOfEnemies / 4; i++)
+            creatures.add(GameObjectFactory.spawnMob());
+
+        creatures.forEach((Creature::setStartPosition));
+
+        creatures.forEach((creature) -> enemiesControllers.add(new Thread(new CreatureController(creature))));
+
+        enemiesControllers.forEach(Thread::start);
+    }
+
+    public static void drawMap() throws ArrayIndexOutOfBoundsException
     {
         for(int i = 0; i < map.length; i++)
             for (int j = 0; j < map[i].length; j++)
@@ -72,7 +79,7 @@ public class GameLogic
                     case EMPTY, SAFE_AREA -> screen.setCharacter(j + 1, i + 1, new TextCharacter(' '));
                     case LAVA -> screen.setCharacter(j + 1, i + 1, new TextCharacter(
                             '▉',
-                            new TextColor.RGB(ThreadLocalRandom.current().nextInt(15) + 96, 8, 16),
+                            getLavaColor(),
                             TextColor.ANSI.DEFAULT));
                     case VERTICAL_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter(Symbols.BOLD_SINGLE_LINE_VERTICAL));
                     case HORIZONTAL_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter(Symbols.BOLD_SINGLE_LINE_HORIZONTAL));
@@ -85,16 +92,21 @@ public class GameLogic
 
         drawRectangle(new Point(0, 0), new Point(map[0].length + 1, map.length + 1));
 
-        creatures.forEach((creature) ->
-                screen.setCharacter(
-                        creature.getPosition().y + 1,
-                        creature.getPosition().x + 1,
-                        new TextCharacter(
-                                creature.getModel(),
-                                new TextColor.RGB(200, 0, 10),
-                                TextColor.ANSI.DEFAULT)
-                )
-        );
+        try {
+            creatures.forEach((creature) -> {
+                if(creature.getPosition() != null)
+                    screen.setCharacter(
+                            creature.getPosition().y + 1,
+                            creature.getPosition().x + 1,
+                            new TextCharacter(
+                                    creature.getModel(),
+                                    new TextColor.RGB(200, 0, 10),
+                                    TextColor.ANSI.DEFAULT)
+                    );
+            }
+            );
+        }
+        catch (ConcurrentModificationException ignored) {}
 
         screen.setCharacter(hero.getPosition().y + 1, hero.getPosition().x + 1, new TextCharacter(
                 '@',
@@ -155,17 +167,5 @@ public class GameLogic
         drawRectangle(new Point(map[0].length + 8, 0), new Point(map[0].length + sizeLabel.length() + 9, 2));
 
         textGraphics.putString(labelBoxTopLeft.withRelative(1, 1), sizeLabel);
-    }
-
-    public static Point getFreePoint()
-    {
-        Random random = new Random();
-        int x, y;
-        while (true)
-        {
-            x = random.nextInt(map.length);
-            y = random.nextInt(map[x].length);
-            if(map[x][y] == CellTypes.EMPTY) return new Point(x ,y);
-        }
     }
 }

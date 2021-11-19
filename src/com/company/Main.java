@@ -5,7 +5,6 @@ import com.company.map.CellTypes;
 import com.company.recources.Colors;
 import com.company.recources.GameResources;
 import com.googlecode.lanterna.*;
-import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration;
@@ -13,9 +12,6 @@ import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 import static com.company.GameLogic.*;
 
@@ -83,7 +79,10 @@ public class Main
                     isAdmin = !isAdmin;
                     if(isAdmin)
                         addToLog("Administrator rights have been issued to " + hero.getName());
-                    else addToLog("Administrator rights were taken away from " + hero.getName());
+                    else {
+                        addToLog("Administrator rights were taken away from " + hero.getName());
+                        noWarFog = false;
+                    }
                     lastKeys = "";
                 }
 

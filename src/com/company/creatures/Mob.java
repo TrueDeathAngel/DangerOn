@@ -11,21 +11,25 @@ public class Mob extends Creature
     private HashMap<Equipment.EquipmentType, Equipment> equipmentItems = new HashMap();
     private Weapon weapon;
 
-    public Mob(String name, int hitPoints, int attackPower, int defencePoints)
+    public Mob(String name, int maxHitPoints, int attackPower, int defencePoints)
     {
-        super(name, hitPoints, attackPower, defencePoints);
+        super(name, maxHitPoints, attackPower, defencePoints);
         model = name.charAt(0);
     }
 
-    public Mob(String name, int hitPoints, int attackPower, int defencePoints, Weapon weapon)
+    public Mob(String name, int maxHitPoints, int attackPower, int defencePoints, Weapon weapon)
     {
-        this(name, hitPoints, attackPower, defencePoints);
+        this(name, maxHitPoints, attackPower, defencePoints);
         setWeapon(weapon);
     }
 
     @Override
-    public int getDamage()
-    {
+    public int getCost() {
+        return super.getCost() + getWeaponAttackPower() + getDefencePoints();
+    }
+
+    @Override
+    public int getDamage() {
         int damage = getAttackPower();
         if(weapon != null) damage += ThreadLocalRandom.current().nextInt(weapon.getAttackPower());
         return damage;
@@ -41,13 +45,10 @@ public class Mob extends Creature
     @Override
     public int getDefencePoints()
     {
-        int defence = super.getDefencePoints();
-        for(Equipment equipment : equipmentItems.values())
-            defence += equipment.getDefencePoints();
-        return defence;
+        return super.getDefencePoints() + equipmentItems.values().stream().mapToInt(Equipment::getDefencePoints).sum();
     }
 
-    public int getWeaponAttackPower() { return weapon.getAttackPower(); }
+    public int getWeaponAttackPower() { return weapon != null ? weapon.getAttackPower() : 0; }
 
     public void setWeapon(Weapon weapon) {
         this.weapon = weapon;

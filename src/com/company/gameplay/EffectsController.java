@@ -1,7 +1,9 @@
 package com.company.gameplay;
 
+import com.company.GameLogic;
 import com.googlecode.lanterna.TextColor;
 import javax.swing.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static com.company.Main.gameOver;

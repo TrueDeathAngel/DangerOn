@@ -16,18 +16,34 @@ public class Hero extends Mob
 {
     private int currentLevel = 1;
     private int experiencePoints = 0;
+    private int experiencePointsForNextLevel = 100;
     private int karma = 0;
     private ArrayList<Spell<?>> spells = new ArrayList<>(3);
 
-    public Hero(String name, int hitPoints, int attackPower, int defencePoints)
+    public Hero(String name, int maxHitPoints, int attackPower, int defencePoints)
     {
-        super(name, hitPoints, attackPower, defencePoints);
+        super(name, maxHitPoints, attackPower, defencePoints);
         model = '@';
         setSlowness(3);
         setScanRadius(3);
-        //position = new Point(5, 5);
         underCell = CellTypes.SAFE_AREA;
     }
+
+    public int getCurrentLevel() { return currentLevel; }
+
+    public void addExperiencePoints(int experiencePoints) { this.experiencePoints += experiencePoints; }
+
+    public void newLevel() {
+        experiencePoints -= experiencePointsForNextLevel;
+        experiencePointsForNextLevel *= 2;
+        currentLevel++;
+    }
+
+    public int getExperiencePoints() { return experiencePoints; }
+
+    public int getExperiencePointsForNextLevel() { return experiencePointsForNextLevel; }
+
+    public int getKarma() { return karma; }
 
     public void addSpell(Spell<?> spell) { if(spells.size() < 3) spells.add(spell); }
 

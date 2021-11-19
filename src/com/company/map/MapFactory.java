@@ -22,6 +22,10 @@ public class MapFactory
 
     public static int getNumberOfRooms() { return mapHeight * mapWidth; }
 
+    public static int getMapWidthInCells() { return mapWidth * roomMaxWidth; }
+
+    public static int getMapHeightInCells() { return mapHeight * roomMaxHeight; }
+
     public static Point getHeroStartPosition() {
         return new Point(heroBaseBottomRight.x - 1, horizontalDoorPosition);
     }
@@ -64,8 +68,7 @@ public class MapFactory
         return map;
     }
 
-    private static CellTypes[][] createRoom(int roomNumber, Point topLeft, Point bottomRight)
-    {
+    private static CellTypes[][] createRoom(int roomNumber, Point topLeft, Point bottomRight) {
         CellTypes[][] room = new CellTypes[roomMaxHeight][roomMaxWidth];
         for (int i = 0; i < roomMaxHeight; i++)
             for (int j = 0; j < roomMaxWidth; j++)
@@ -159,16 +162,14 @@ public class MapFactory
         return room;
     }
 
-    private enum CorridorDirections
-    {
+    private enum CorridorDirections {
         UP,
         RIGHT,
         DOWN,
         LEFT
     }
 
-    private static class Room
-    {
+    private static class Room {
         ArrayList<CorridorDirections> corridorDirections = new ArrayList<>();
 
         boolean isVisited = false;

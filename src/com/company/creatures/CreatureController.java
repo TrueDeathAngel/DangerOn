@@ -1,6 +1,7 @@
 package com.company.creatures;
 
 import com.company.GameLogic;
+import com.company.recources.Colors;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -22,10 +23,11 @@ public class CreatureController implements Runnable
             {
                 map[creature.position.x][creature.position.y] = creature.underCell;
                 GameLogic.creatures.remove(creature);
-                System.out.println("\u001b[38;5;9m" + creature.getName() + "\u001b[0m was slain");
+                GameLogic.addToLog(Colors.RED + creature.getName() + Colors.RESET + " was slain");
+                GameLogic.hero.addExperiencePoints(creature.getCost());
+                GameLogic.numberOfEnemies--;
                 break;
             }
-            //else System.out.println(creature.getName() + "'s id = " + creature.id + " and position = " + creature.position + "!");
 
             if(creature.scanArea()) creature.setStatus(Status.CHASE);
             else creature.setStatus(Status.IDLE);

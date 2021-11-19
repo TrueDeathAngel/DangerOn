@@ -17,9 +17,9 @@ public class Creature extends GameObject
 {
     private static int creaturesId;
     public final int id;
-    private int hitPoints = 10;
-    private int attackPower = 1;
-    private int defencePoints = 0;
+    private int hitPoints;
+    private final int attackPower;
+    private final int defencePoints;
     private Status status = Status.IDLE;
     protected Point position;
     private int slowness;
@@ -27,13 +27,15 @@ public class Creature extends GameObject
     private int scanRadius = 2;
     private ArrayList<Item> inventory;
     protected CellTypes underCell;
+    protected final int maxHitPoints;
 
-    public Creature(String name, int hitPoints, int attackPower, int defencePoints) {
+    public Creature(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name);
         id = creaturesId++;
         slowness = ThreadLocalRandom.current().nextInt(3) + 2;
         model = Character.toLowerCase(name.charAt(0));
-        this.hitPoints = hitPoints;
+        this.hitPoints = maxHitPoints;
+        this.maxHitPoints = maxHitPoints;
         this.attackPower = attackPower;
         this.defencePoints = defencePoints;
     }
@@ -42,9 +44,15 @@ public class Creature extends GameObject
 
     public void setStatus(Status status) { this.status = status; }
 
+    public int getCost() {
+        return maxHitPoints + attackPower + defencePoints;
+    }
+
     public int getSlowness() { return slowness; }
 
     public void setSlowness(int slowness) { this.slowness = slowness; }
+
+    public int getMaxHitPoints() { return maxHitPoints; }
 
     public int getAttackPower() { return attackPower; }
 
@@ -72,12 +80,13 @@ public class Creature extends GameObject
 
     public char getModel() { return model; }
 
-    public void receiveDamage(int damage)
-    {
+    public void receiveDamage(int damage) {
         int defence = getDefencePoints();
         if(damage > defence) hitPoints -= damage - defence;
         else hitPoints--;
     }
+
+    public void instantRecovery() { hitPoints = maxHitPoints; }
 
     public boolean isAlive() { return getHitPoints() > 0; }
 
@@ -86,8 +95,7 @@ public class Creature extends GameObject
         move(chooseNextPosition());
     }
 
-    public void move(int x, int y)
-    {
+    public void move(int x, int y) {
         if(canMove(x, y))
             try
             {

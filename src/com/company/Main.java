@@ -1,7 +1,11 @@
 package com.company;
 
+import com.company.items.Weapon;
 import com.company.map.CellTypes;
+import com.company.recources.Colors;
+import com.company.recources.GameResources;
 import com.googlecode.lanterna.*;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration;
@@ -9,6 +13,9 @@ import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import static com.company.GameLogic.*;
 
@@ -31,7 +38,7 @@ public class Main
             defaultTerminalFactory.setTerminalEmulatorTitle("DungerOn " + GameResources.version);
             try {
                 // Load a font and set its size
-                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("Hack-Regular.ttf")).deriveFont(16f);
+                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("SourceCodePro-Medium.ttf")).deriveFont(15f);
 
                 // Set the font for the terminal factory
                 defaultTerminalFactory.setTerminalEmulatorFontConfiguration(SwingTerminalFontConfiguration.newInstance(font));
@@ -49,6 +56,8 @@ public class Main
 
             terminalSize = screen.getTerminalSize();
 
+            hero.setWeapon(new Weapon("Cool Stick", 4, 1, 1));
+
             GameLogic.startGame();
 
             while (true)
@@ -62,13 +71,27 @@ public class Main
 
                 if(gameOver) break;
 
-                try{drawMap();}
-                catch (ArrayIndexOutOfBoundsException e) {System.out.println("here");}
+                if(!hero.isAlive()) {
+                    addToLog(Colors.GREEN + hero.getName() + Colors.RESET + " was slain");
+                    floorNumber = 0;
+                    refreshMap();
+                    hero.instantRecovery();
+                }
 
-                drawInfo();
+                if(lastKeys.contains("gimme"))
+                {
+                    isAdmin = !isAdmin;
+                    if(isAdmin)
+                        addToLog("Administrator rights have been issued to " + hero.getName());
+                    else addToLog("Administrator rights were taken away from " + hero.getName());
+                    lastKeys = "";
+                }
+
+                drawMap();
+
+                drawAllData();
 
                 screen.refresh();
-                //Thread.yield();
             }
         }
         catch (IOException ignored) {}
@@ -80,6 +103,7 @@ public class Main
                     e.printStackTrace();
                 }
             }
+
             enemiesControllers.forEach(Thread::stop);
             gamePlayControllers.forEach(Thread::stop);
         }

@@ -49,14 +49,17 @@ public class KeyController implements Runnable
                             gameOver = true;
                         }
                         case Character -> {
-                            if(pressedKey.getCharacter() == 'a') autoMode = !autoMode;
-                            else if(pressedKey.getCharacter() == 'r' && canReloadMap)
-                            {
-                                canReloadMap = false;
-                                refreshMap();
-                                currentTime = 0;
-                                reloadMapTimer.restart();
-                            }
+                            addPressedKey(pressedKey.getCharacter());
+                            if(pressedKey.getCharacter() == 'a' || pressedKey.getCharacter() == 'ф') autoMode = !autoMode;
+                            else if (isAdmin)
+                                if ((pressedKey.getCharacter() == 'r' || pressedKey.getCharacter() == 'к') && canReloadMap)
+                                {
+                                    canReloadMap = false;
+                                    refreshMap();
+                                    currentTime = 0;
+                                    reloadMapTimer.restart();
+                                }
+                                else if(pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
                         }
                     }
                 }

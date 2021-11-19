@@ -4,31 +4,58 @@ import com.company.creatures.*;
 import com.company.gameplay.EffectsController;
 import com.company.gameplay.KeyController;
 import com.company.map.MapFactory;
+import com.company.recources.Colors;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
 import static com.company.Main.*;
 import static com.company.gameplay.EffectsController.getLavaColor;
 
 public class GameLogic
 {
     public static boolean autoMode = false;
+    public static int floorNumber;
 
     public static ArrayList<Thread> enemiesControllers = new ArrayList<>();
     public static ArrayList<Thread> gamePlayControllers = new ArrayList<>();
     public static KeyStroke pressedKey = null;
     public static ArrayList<Creature> creatures = new ArrayList<>();
 
-    public static Hero hero = new Hero("Oleg", 250, 5, 10);
+    public static int counter;
 
-    public static void startGame()
-    {
+    public static Hero hero = new Hero("Player", 100, 5, 10);
+
+    private static final TerminalSize heroStatsPanelSize = new TerminalSize(21, 8);
+    private static final int mapToMenuDistanceHorizontal = 8;
+    private static ArrayList<String> stringsToDraw = new ArrayList<>(); // The first element is a header
+    private static final ArrayList<String> log = new ArrayList<>();
+
+    public static String lastKeys = "";
+    public static boolean isAdmin = false;
+
+    private static boolean[][] visibleCells;
+    public static boolean noWarFog = false;
+
+    public static int numberOfEnemies;
+
+    private static int logWidth = 30;
+
+    public static void addToLog(String text) {
+        if(log.size() >= 5) log.remove(0);
+        log.add(text);
+    }
+
+    public static void addPressedKey(char key) {
+        if(lastKeys.length() >= 10) lastKeys = lastKeys.substring(1);
+        lastKeys += key;
+    }
+
+    public static void startGame() {
         refreshMap();
 
         gamePlayControllers.add(new Thread(new EffectsController()));
@@ -40,9 +67,11 @@ public class GameLogic
         gamePlayControllers.forEach(Thread::start);
     }
 
-    public static void refreshMap()
-    {
+    public static void refreshMap() {
+        GameLogic.addToLog(hero.getName() + " entered the floor #" + ++floorNumber);
+
         map = MapFactory.createMap();
+        visibleCells = new boolean[MapFactory.getMapHeightInCells()][MapFactory.getMapWidthInCells()];
         hero.setStartPosition();
 
         addEnemies();
@@ -50,17 +79,16 @@ public class GameLogic
         screen.clear();
     }
 
-    public static void addEnemies()
-    {
+    public static void addEnemies() {
         enemiesControllers.forEach(Thread::stop);
         enemiesControllers.clear();
         creatures.clear();
 
-        int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms()) + 3;
+        numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms()) + 3;
 
         for(int i = 0; i < 3 * numberOfEnemies / 4; i++)
             creatures.add(GameObjectFactory.spawnCreature());
-        for(int i = 0; i < numberOfEnemies / 4; i++)
+        for(int i = 0; i < numberOfEnemies - 3 * numberOfEnemies / 4; i++)
             creatures.add(GameObjectFactory.spawnMob());
 
         creatures.forEach((Creature::setStartPosition));
@@ -70,34 +98,41 @@ public class GameLogic
         enemiesControllers.forEach(Thread::start);
     }
 
-    public static void drawMap() throws ArrayIndexOutOfBoundsException
-    {
-        for(int i = 0; i < map.length; i++)
-            for (int j = 0; j < map[i].length; j++)
-                switch (map[i][j])
-                {
-                    case EMPTY, SAFE_AREA -> screen.setCharacter(j + 1, i + 1, new TextCharacter(' '));
-                    case LAVA -> screen.setCharacter(j + 1, i + 1, new TextCharacter(
-                            '▉',
-                            getLavaColor(),
-                            TextColor.ANSI.DEFAULT));
-                    case VERTICAL_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter(Symbols.BOLD_SINGLE_LINE_VERTICAL));
-                    case HORIZONTAL_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter(Symbols.BOLD_SINGLE_LINE_HORIZONTAL));
-                    case TOP_LEFT_CORNER_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter('┏'));
-                    case TOP_RIGHT_CORNER_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter('┓'));
-                    case BOTTOM_RIGHT_CORNER_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter('┛'));
-                    case BOTTOM_LEFT_CORNER_WALL -> screen.setCharacter(j + 1, i + 1, new TextCharacter('┗'));
-                    case DOOR -> screen.setCharacter(j + 1, i + 1, new TextCharacter('&'));
-                }
+    public static void drawMap() {
+        for(int i = Math.max(hero.getPosition().x - hero.getScanRadius(), 0); i < Math.min(hero.getPosition().x + hero.getScanRadius(), map.length); i++)
+            for(int j = Math.max(hero.getPosition().y - hero.getScanRadius() * 2, 0); j < Math.min(hero.getPosition().y + hero.getScanRadius() * 2, map[0].length); j++)
+                visibleCells[i][j] = true;
 
-        drawRectangle(new Point(0, 0), new Point(map[0].length + 1, map.length + 1));
+        try {
+            for (int i = 0; i < map.length; i++)
+                for (int j = 0; j < map[i].length; j++)
+                    if(!(noWarFog || visibleCells[i][j]))
+                        screen.setCharacter(j + 1, i + 2, new TextCharacter('#'));
+                    else
+                        switch (map[i][j]) {
+                            case EMPTY, SAFE_AREA -> screen.setCharacter(j + 1, i + 2, new TextCharacter(' '));
+                            case LAVA -> screen.setCharacter(j + 1, i + 2, new TextCharacter(
+                                    '▉',
+                                    getLavaColor(),
+                                    TextColor.ANSI.DEFAULT));
+                            case VERTICAL_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter(Symbols.BOLD_SINGLE_LINE_VERTICAL));
+                            case HORIZONTAL_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter(Symbols.BOLD_SINGLE_LINE_HORIZONTAL));
+                            case TOP_LEFT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┏'));
+                            case TOP_RIGHT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┓'));
+                            case BOTTOM_RIGHT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┛'));
+                            case BOTTOM_LEFT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┗'));
+                            case DOOR -> screen.setCharacter(j + 1, i + 2, new TextCharacter('&'));
+                        }
+        } catch (ArrayIndexOutOfBoundsException ignored) {}
+
+        drawRectangle(new TerminalPosition(0, 0), new TerminalSize(map[0].length + 1, map.length + 1), "Floor #" + floorNumber);
 
         try {
             creatures.forEach((creature) -> {
-                if(creature.getPosition() != null)
+                if(creature.getPosition() != null && (noWarFog || visibleCells[creature.getPosition().x][creature.getPosition().y]))
                     screen.setCharacter(
                             creature.getPosition().y + 1,
-                            creature.getPosition().x + 1,
+                            creature.getPosition().x + 2,
                             new TextCharacter(
                                     creature.getModel(),
                                     new TextColor.RGB(200, 0, 10),
@@ -108,70 +143,113 @@ public class GameLogic
         }
         catch (ConcurrentModificationException ignored) {}
 
-        screen.setCharacter(hero.getPosition().y + 1, hero.getPosition().x + 1, new TextCharacter(
+        screen.setCharacter(hero.getPosition().y + 1, hero.getPosition().x + 2, new TextCharacter(
                 '@',
                 new TextColor.RGB(0, 200, 100),
                 TextColor.ANSI.DEFAULT));
     }
 
-    private static void drawRectangle(Point topLeft, Point bottomRight)
-    {
+    private static void drawRectangle(TerminalPosition topLeft, TerminalSize size) {
         TextGraphics textGraphics = screen.newTextGraphics();
 
         textGraphics.drawLine(
-                topLeft.x + 1,
-                topLeft.y,
-                bottomRight.x - 1,
-                topLeft.y,
+                topLeft.getColumn() + 1,
+                topLeft.getRow(),
+                topLeft.getColumn() + size.getColumns() - 2,
+                topLeft.getRow(),
                 Symbols.DOUBLE_LINE_HORIZONTAL);
 
         textGraphics.drawLine(
-                topLeft.x + 1,
-                bottomRight.y,
-                bottomRight.x - 1,
-                bottomRight.y,
+                topLeft.getColumn() + 1,
+                topLeft.getRow() + size.getRows() - 1,
+                topLeft.getColumn() + size.getColumns() - 1,
+                topLeft.getRow() + size.getRows() - 1,
                 Symbols.DOUBLE_LINE_HORIZONTAL);
 
         textGraphics.drawLine(
-                topLeft.x,
-                topLeft.y + 1,
-                topLeft.x,
-                bottomRight.y - 1,
+                topLeft.getColumn(),
+                topLeft.getRow() + 1,
+                topLeft.getColumn(),
+                topLeft.getRow() + size.getRows() - 2,
                 Symbols.DOUBLE_LINE_VERTICAL);
 
         textGraphics.drawLine(
-                bottomRight.x,
-                topLeft.y + 1,
-                bottomRight.x,
-                bottomRight.y - 1,
+                topLeft.getColumn() + size.getColumns() - 1,
+                topLeft.getRow() + 1,
+                topLeft.getColumn() + size.getColumns() - 1,
+                topLeft.getRow() + size.getRows() - 2,
                 Symbols.DOUBLE_LINE_VERTICAL);
 
-        textGraphics.setCharacter(topLeft.x, topLeft.y, Symbols.DOUBLE_LINE_TOP_LEFT_CORNER);
-        textGraphics.setCharacter(bottomRight.x, topLeft.y, Symbols.DOUBLE_LINE_TOP_RIGHT_CORNER);
-        textGraphics.setCharacter(bottomRight.x, bottomRight.y, Symbols.DOUBLE_LINE_BOTTOM_RIGHT_CORNER);
-        textGraphics.setCharacter(topLeft.x, bottomRight.y, Symbols.DOUBLE_LINE_BOTTOM_LEFT_CORNER);
+        textGraphics.setCharacter(topLeft, Symbols.DOUBLE_LINE_TOP_LEFT_CORNER);
+        textGraphics.setCharacter(topLeft.withRelativeColumn(size.getColumns() - 1), Symbols.DOUBLE_LINE_TOP_RIGHT_CORNER);
+        textGraphics.setCharacter(topLeft.withRelative(size.getColumns() - 1, size.getRows() - 1), Symbols.DOUBLE_LINE_BOTTOM_RIGHT_CORNER);
+        textGraphics.setCharacter(topLeft.withRelativeRow(size.getRows() - 1), Symbols.DOUBLE_LINE_BOTTOM_LEFT_CORNER);
     }
 
-    public static void drawInfo()
-    {
-        String sizeLabel = "Player's HP: " + GameLogic.hero.getHitPoints();
-        if(terminalSize.getColumns() - map[0].length - sizeLabel.length() - 10 < 0) return;
-
-        TerminalPosition labelBoxTopLeft =
-                new TerminalPosition(map[0].length + 8, 0);
-        TerminalSize labelBoxSize = new TerminalSize(sizeLabel.length() + 2, 5);
+    private static void drawRectangle(TerminalPosition topLeft, TerminalSize size, String header) {
         TextGraphics textGraphics = screen.newTextGraphics();
 
-        textGraphics.fillRectangle(labelBoxTopLeft, labelBoxSize, ' ');
+        textGraphics.putString(topLeft, "-".repeat(size.getColumns()));
+        textGraphics.putString(topLeft.withRelativeColumn((size.getColumns() - header.length()) / 2), header);
 
-        drawRectangle(new Point(map[0].length + 8, 0), new Point(map[0].length + sizeLabel.length() + 9, 2));
+        drawRectangle(topLeft.withRelativeRow(1), size);
+    }
 
-        textGraphics.putString(labelBoxTopLeft.withRelative(1, 1), sizeLabel);
-        textGraphics.putString(labelBoxTopLeft.withRelative(1, 4), "Controls:");
-        drawRectangle(new Point(map[0].length + 8, 5), new Point(map[0].length + 23, 9));
-        textGraphics.putString(labelBoxTopLeft.withRelative(1, 6), "d - attack");
-        textGraphics.putString(labelBoxTopLeft.withRelative(1, 7), "a - auto mode");
-        textGraphics.putString(labelBoxTopLeft.withRelative(1, 8), "r - reload map");
+    public static void drawData(TerminalPosition topLeft, TerminalSize size) {
+        TextGraphics textGraphics = screen.newTextGraphics();
+        textGraphics.fillRectangle(topLeft, size.withColumns(terminalSize.getColumns()).withRelativeRows(1), ' ');
 
+        drawRectangle(
+                topLeft,
+                size.withColumns(stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0)).withRelativeColumns(2),
+                stringsToDraw.get(0)
+        );
+
+        for(int i = 1; i < stringsToDraw.size(); i++) {
+            textGraphics.putCSIStyledString(topLeft.withRelative(1, i + 1), stringsToDraw.get(i));
+        }
+
+        stringsToDraw.clear();
+    }
+
+    public static void drawAllData() {
+        // Draw hero's stats
+        stringsToDraw = new ArrayList<>(List.of(
+                hero.getName(),
+                "HP:" + Colors.RED
+                        + " ❤".repeat((int)(10 * (float)hero.getHitPoints() / (float)hero.getMaxHitPoints()))
+                        + ((10 * hero.getHitPoints()) % hero.getMaxHitPoints() != 0 ? Colors.RED_DANCING + " ❤" : "")
+                        + Colors.RESET
+                        + " ❤".repeat((int)(10 - 10 * (float)hero.getHitPoints() / (float)hero.getMaxHitPoints()))
+                        + " ("
+                        + hero.getHitPoints()
+                        + '/'
+                        + hero.getMaxHitPoints()
+                        + ')',
+                "Defence Points: " + hero.getDefencePoints(),
+                "Attack Power: " + (hero.getAttackPower() + hero.getWeaponAttackPower()),
+                "Current Level: " + hero.getCurrentLevel(),
+                "Experience Points: " + hero.getExperiencePoints() + '/' + hero.getExperiencePointsForNextLevel(),
+                "Number of enemies: " + numberOfEnemies
+        ));
+
+        drawData(new TerminalPosition(map[0].length + mapToMenuDistanceHorizontal + 1, 0), new TerminalSize(24, 8));
+
+        // Draw controls
+        stringsToDraw = new ArrayList<>(List.of(
+                "Controls",
+                "D - attack",
+                "A - auto mode",
+                "R - regenerate map",
+                "Esc - exit"
+        ));
+
+        drawData(new TerminalPosition(map[0].length + mapToMenuDistanceHorizontal + 1, 10), new TerminalSize(20, 6));
+
+        // Draw log
+        stringsToDraw = new ArrayList<>(List.of("Log"));
+        stringsToDraw.addAll(log);
+
+        drawData(new TerminalPosition(0, map.length + 3), new TerminalSize(20, log.size() + 2));
     }
 }

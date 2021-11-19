@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import static com.company.GameLogic.addToLog;
 import static com.company.GameLogic.pressedKey;
 import static com.company.Main.*;
 
@@ -23,11 +24,9 @@ public class HeroController implements Runnable
     {
         while (!gameOver)
         {
-            if(!hero.isAlive())
-            {
-                map[hero.position.x][hero.position.y] = hero.underCell;
-                System.out.println("\u001b[38;5;9m" + hero.getName() + "\u001b[0m was slain");
-                break;
+            if(hero.getExperiencePoints() >= hero.getExperiencePointsForNextLevel()) {
+                hero.newLevel();
+                addToLog(hero.getName() + " reached new level: " + hero.getCurrentLevel() + '!');
             }
 
             if(!GameLogic.autoMode)
@@ -46,7 +45,7 @@ public class HeroController implements Runnable
                             case ArrowDown -> hero.move(1, 0);
                             case ArrowLeft -> hero.move(0, -1);
                             case Character -> {
-                                if(pressedKey.getCharacter() == 'd')
+                                if(pressedKey.getCharacter() == 'd' || pressedKey.getCharacter() == 'в')
                                 {
                                     targets = hero.scanAreaForTargets();
                                     if(targets.size() > 0)
@@ -58,7 +57,6 @@ public class HeroController implements Runnable
                                                 .ifPresent(creature -> creature.receiveDamage(hero.getDamage()));
                                     }
                                 }
-                                //else if(pressedKey.getCharacter() == 'a') GameLogic.autoMode = true;
                             }
                         }
                     pressedKey = null;

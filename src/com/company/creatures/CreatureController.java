@@ -25,7 +25,6 @@ public class CreatureController implements Runnable
                 GameLogic.creatures.remove(creature);
                 GameLogic.addToLog(Colors.RED + creature.getName() + Colors.RESET + " was slain. " + Colors.GOLDEN + "+ " + creature.getCost() + " XP" + Colors.RESET);
                 GameLogic.hero.addExperiencePoints(creature.getCost());
-                GameLogic.numberOfEnemies--;
                 break;
             }
 

@@ -64,7 +64,7 @@ public class Hero extends Mob
 
     public ArrayList<Creature> scanAreaForTargets()
     {
-        return GameLogic.creatures.stream().filter((creature) -> creature.scanArea(getScanRadius())).collect(Collectors.toCollection(ArrayList::new));
+        return GameLogic.creatures.stream().filter((creature) -> creature != null && creature.scanArea(getScanRadius())).collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

@@ -41,8 +41,6 @@ public class GameLogic
     private static boolean[][] visibleCells;
     public static boolean noWarFog = false;
 
-    public static int numberOfEnemies;
-
     private static int logWidth = 30;
 
     public static void addToLog(String text) {
@@ -84,7 +82,7 @@ public class GameLogic
         enemiesControllers.clear();
         creatures.clear();
 
-        numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms()) + 3;
+        int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms()) + 3;
 
         for(int i = 0; i < 3 * numberOfEnemies / 4; i++)
             creatures.add(GameObjectFactory.spawnCreature());
@@ -230,7 +228,7 @@ public class GameLogic
                 "Attack Power: " + (hero.getAttackPower() + hero.getWeaponAttackPower()),
                 "Current Level: " + hero.getCurrentLevel(),
                 "Experience Points: " + hero.getExperiencePoints() + '/' + hero.getExperiencePointsForNextLevel(),
-                "Number of enemies: " + numberOfEnemies
+                "Number of enemies: " + creatures.size()
         ));
 
         drawData(new TerminalPosition(map[0].length + mapToMenuDistanceHorizontal + 1, 0), new TerminalSize(24, 8));

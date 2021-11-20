@@ -34,7 +34,7 @@ public class Main
             defaultTerminalFactory.setTerminalEmulatorTitle("DungerOn " + GameResources.version);
             try {
                 // Load a font and set its size
-                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("SourceCodePro-Medium.ttf")).deriveFont(15f);
+                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("SourceCodePro-Medium.ttf")).deriveFont(20f);
 
                 // Set the font for the terminal factory
                 defaultTerminalFactory.setTerminalEmulatorFontConfiguration(SwingTerminalFontConfiguration.newInstance(font));

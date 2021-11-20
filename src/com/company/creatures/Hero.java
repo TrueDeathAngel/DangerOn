@@ -25,7 +25,7 @@ public class Hero extends Mob
         super(name, maxHitPoints, attackPower, defencePoints);
         model = '@';
         setSlowness(3);
-        setScanRadius(3);
+        setScanRadius(4);
         underCell = CellTypes.SAFE_AREA;
     }
 

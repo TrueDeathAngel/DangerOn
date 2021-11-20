@@ -7,8 +7,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MapFactory
 {
-    private static final int roomMaxHeight = 9; // >= 7
-    private static final int roomMaxWidth = 18;  // >= 7
+    private static final int roomMaxHeight = 11; // >= 7
+    private static final int roomMaxWidth = 22;  // >= 7
     private static int mapHeight;
     private static int mapWidth;
     private static final int verticalDoorPosition = roomMaxHeight / 2;
@@ -31,7 +31,7 @@ public class MapFactory
     }
 
     public static CellTypes[][] createMap() {
-        mapHeight = ThreadLocalRandom.current().nextInt(2) + 2;
+        mapHeight = ThreadLocalRandom.current().nextInt(5) + 2;
         mapWidth = ThreadLocalRandom.current().nextInt(5) + 2;
 
         generateMapTemplate();

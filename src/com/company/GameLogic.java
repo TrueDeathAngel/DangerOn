@@ -9,6 +9,7 @@ import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -30,7 +31,7 @@ public class GameLogic
 
     public static Hero hero = new Hero("Player", 100, 5, 10);
 
-    private static final TerminalSize heroStatsPanelSize = new TerminalSize(21, 8);
+    private static final Point heroViewZone = new Point(12, 24);
     private static final int mapToMenuDistanceHorizontal = 8;
     private static ArrayList<String> stringsToDraw = new ArrayList<>(); // The first element is a header
     private static final ArrayList<String> log = new ArrayList<>();
@@ -97,17 +98,19 @@ public class GameLogic
     }
 
     public static void drawMap() {
-        for(int i = Math.max(hero.getPosition().x - hero.getScanRadius(), 0); i < Math.min(hero.getPosition().x + hero.getScanRadius(), map.length); i++)
-            for(int j = Math.max(hero.getPosition().y - hero.getScanRadius() * 2, 0); j < Math.min(hero.getPosition().y + hero.getScanRadius() * 2, map[0].length); j++)
+        for(int i = Math.max(hero.getPosition().x - hero.getScanRadius() + 1, 0); i < Math.min(hero.getPosition().x + hero.getScanRadius(), map.length); i++)
+            for(int j = Math.max(Math.abs(i - hero.getPosition().x) + hero.getPosition().y - hero.getScanRadius() * 2 + 1, 0); j < Math.min(hero.getPosition().y + hero.getScanRadius() * 2 - Math.abs(i - hero.getPosition().x), map[0].length); j++)
                 visibleCells[i][j] = true;
 
         try {
-            for (int i = 0; i < map.length; i++)
-                for (int j = 0; j < map[i].length; j++)
-                    if(!(noWarFog || visibleCells[i][j]))
-                        screen.setCharacter(j + 1, i + 2, new TextCharacter('#'));
+            for (int i = 0; i < heroViewZone.x; i++)
+                for (int j = 0; j < heroViewZone.y; j++)
+                    if(!(noWarFog || visibleCells[i + Math.max(0, Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x))]
+                            [j + Math.max(0, Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y))]))
+                    screen.setCharacter(j + 1, i + 2, new TextCharacter('#'));
                     else
-                        switch (map[i][j]) {
+                        switch (map[i + Math.max(0, Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x))]
+                                [j + Math.max(0, Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y))]) {
                             case EMPTY, SAFE_AREA -> screen.setCharacter(j + 1, i + 2, new TextCharacter(' '));
                             case LAVA -> screen.setCharacter(j + 1, i + 2, new TextCharacter(
                                     '▉',
@@ -123,14 +126,23 @@ public class GameLogic
                         }
         } catch (ArrayIndexOutOfBoundsException ignored) {}
 
-        drawRectangle(new TerminalPosition(0, 0), new TerminalSize(map[0].length + 1, map.length + 1), "Floor #" + floorNumber);
+        drawRectangle(new TerminalPosition(0, 0), new TerminalSize(heroViewZone.y + 2, heroViewZone.x + 2), "Floor #" + floorNumber);
 
         try {
             creatures.forEach((creature) -> {
-                if(creature.getPosition() != null && (noWarFog || visibleCells[creature.getPosition().x][creature.getPosition().y]))
+                if(creature.getPosition() != null
+                        && creature.getPosition().y >= hero.getPosition().y - heroViewZone.y / 2
+                        && creature.getPosition().y < hero.getPosition().y + heroViewZone.y / 2
+                        && creature.getPosition().x >= hero.getPosition().x - heroViewZone.x / 2
+                        && creature.getPosition().x < hero.getPosition().x + heroViewZone.x / 2
+                        && (noWarFog || visibleCells[creature.getPosition().x][creature.getPosition().y]))
                     screen.setCharacter(
-                            creature.getPosition().y + 1,
-                            creature.getPosition().x + 2,
+                            Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2)
+                                    + Math.min(heroViewZone.y / 2, hero.getPosition().y)
+                                    + (creature.getPosition().y - hero.getPosition().y) + 1,
+                            Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2)
+                                    + Math.min(heroViewZone.x / 2, hero.getPosition().x)
+                                    + (creature.getPosition().x - hero.getPosition().x) + 2,
                             new TextCharacter(
                                     creature.getModel(),
                                     new TextColor.RGB(200, 0, 10),
@@ -141,7 +153,10 @@ public class GameLogic
         }
         catch (ConcurrentModificationException ignored) {}
 
-        screen.setCharacter(hero.getPosition().y + 1, hero.getPosition().x + 2, new TextCharacter(
+        screen.setCharacter(
+                Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2) + Math.min(heroViewZone.y / 2, hero.getPosition().y) + 1,
+                Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2) + Math.min(heroViewZone.x / 2, hero.getPosition().x) + 2,
+                new TextCharacter(
                 '@',
                 new TextColor.RGB(0, 200, 100),
                 TextColor.ANSI.DEFAULT));
@@ -228,26 +243,25 @@ public class GameLogic
                 "Attack Power: " + (hero.getAttackPower() + hero.getWeaponAttackPower()),
                 "Current Level: " + hero.getCurrentLevel(),
                 "Experience Points: " + hero.getExperiencePoints() + '/' + hero.getExperiencePointsForNextLevel(),
-                "Number of enemies: " + creatures.size()
+                "Number of enemies: " + creatures.size(),
+                "Number of rooms: " + MapFactory.getNumberOfRooms()
         ));
 
-        drawData(new TerminalPosition(map[0].length + mapToMenuDistanceHorizontal + 1, 0), new TerminalSize(24, 8));
+        drawData(new TerminalPosition(heroViewZone.y + mapToMenuDistanceHorizontal + 2, 0), new TerminalSize(24, 9));
 
         // Draw controls
         stringsToDraw = new ArrayList<>(List.of(
                 "Controls",
-                "D - attack",
-                "A - auto mode",
-                "R - regenerate map",
-                "Esc - exit"
+                "D - attack | A - auto mode",
+                "Esc - exit | R - regenerate map"
         ));
 
-        drawData(new TerminalPosition(map[0].length + mapToMenuDistanceHorizontal + 1, 10), new TerminalSize(20, 6));
+        drawData(new TerminalPosition(heroViewZone.y + mapToMenuDistanceHorizontal + 2, 11), new TerminalSize(20, 4));
 
         // Draw log
         stringsToDraw = new ArrayList<>(List.of("Log"));
         stringsToDraw.addAll(log);
 
-        drawData(new TerminalPosition(0, map.length + 3), new TerminalSize(20, log.size() + 2));
+        drawData(new TerminalPosition(0, heroViewZone.x + 5), new TerminalSize(20, log.size() + 2));
     }
 }

@@ -138,7 +138,7 @@ public class Creature extends GameObject
     }
 
     public boolean scanArea(int scanRadius) {
-        return Math.abs(position.x - GameLogic.hero.getPosition().x) + Math.abs(position.y - GameLogic.hero.getPosition().y) <= scanRadius;
+        return Math.pow(position.x - GameLogic.hero.getPosition().x, 2) + Math.pow(position.y - GameLogic.hero.getPosition().y, 2) <= Math.pow(scanRadius, 2);
     }
 
     public boolean scanArea()

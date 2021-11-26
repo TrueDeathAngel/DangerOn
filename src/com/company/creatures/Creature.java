@@ -32,7 +32,7 @@ public class Creature extends GameObject
     public Creature(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name);
         id = creaturesId++;
-        slowness = ThreadLocalRandom.current().nextInt(3) + 2;
+        slowness = ThreadLocalRandom.current().nextInt(5) + 2;
         model = Character.toLowerCase(name.charAt(0));
         this.hitPoints = maxHitPoints;
         this.maxHitPoints = maxHitPoints;
@@ -123,8 +123,12 @@ public class Creature extends GameObject
     protected boolean canMove(int x, int y) {
         synchronized (map)
         {
-            return getAllowedCells().contains(map[position.x + x][position.y + y]);
+            try {
+                return getAllowedCells().contains(map[position.x + x][position.y + y]);
+            }
+            catch (Exception e) { System.out.println(position.x + x + ' ' + position.y + y); }
         }
+        return false;
     }
 
     public CellTypes getEntityType()

@@ -2,7 +2,6 @@ package com.company.map;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MapFactory
@@ -32,7 +31,7 @@ public class MapFactory
 
     public static CellTypes[][] createMap() {
         mapHeight = ThreadLocalRandom.current().nextInt(5) + 2;
-        mapWidth = ThreadLocalRandom.current().nextInt(5) + 2;
+        mapWidth = ThreadLocalRandom.current().nextInt(5) + 3;
 
         generateMapTemplate();
 

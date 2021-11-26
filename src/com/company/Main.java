@@ -18,7 +18,6 @@ import static com.company.GameLogic.*;
 public class Main
 {
     // static String[] heroNames = {"Олежа", "Васян", "Женёк", "Жорик"};
-    // static String[] weaponNames = {"Sword", "Axe", "Pickaxe", "Bow", "Crossbow", "Spear", "Dagger", "Mace", "Hammer", "Sickle"};
 
     public static DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
     public static Screen screen = null;
@@ -27,10 +26,8 @@ public class Main
 
     public static CellTypes[][] map;
 
-    public static void main(String[] args)
-    {
-        try
-        {
+    public static void main(String[] args) {
+        try {
             defaultTerminalFactory.setTerminalEmulatorTitle("DungerOn " + GameResources.version);
             try {
                 // Load a font and set its size
@@ -40,10 +37,7 @@ public class Main
                 defaultTerminalFactory.setTerminalEmulatorFontConfiguration(SwingTerminalFontConfiguration.newInstance(font));
             }
             // Handle exception :)
-            catch (FontFormatException e)
-            {
-                System.out.println("Unable to set the font: Wrong font format");
-            }
+            catch (FontFormatException e) { System.out.println("Unable to set the font: Wrong font format"); }
 
             screen = defaultTerminalFactory.createScreen();
 
@@ -56,11 +50,9 @@ public class Main
 
             GameLogic.startGame();
 
-            while (true)
-            {
+            while (true) {
                 TerminalSize newSize = screen.doResizeIfNecessary();
-                if(newSize != null)
-                {
+                if(newSize != null) {
                     terminalSize = newSize;
                     screen.clear();
                 }
@@ -74,8 +66,7 @@ public class Main
                     hero.instantRecovery();
                 }
 
-                if(lastKeys.contains("gimme"))
-                {
+                if(lastKeys.contains("gimme")) {
                     isAdmin = !isAdmin;
                     if(isAdmin)
                         addToLog("Administrator rights have been issued to " + hero.getName());
@@ -103,8 +94,8 @@ public class Main
                 }
             }
 
-            enemiesControllers.forEach(Thread::stop);
-            gamePlayControllers.forEach(Thread::stop);
+            enemiesControllers.forEach(Controller::cancel);
+            gamePlayControllers.forEach(Controller::cancel);
         }
 
         /*Random = new Random();

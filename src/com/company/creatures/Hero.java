@@ -7,6 +7,7 @@ import com.company.map.CellTypes;
 import com.company.map.MapFactory;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,8 @@ public class Hero extends Mob
 
     public void newLevel() {
         experiencePoints -= experiencePointsForNextLevel;
-        experiencePointsForNextLevel *= 2;
+        experiencePointsForNextLevel *= 1.5;
+        experiencePointsForNextLevel -= experiencePointsForNextLevel % 10;
         currentLevel++;
     }
 
@@ -64,7 +66,11 @@ public class Hero extends Mob
 
     public ArrayList<Creature> scanAreaForTargets()
     {
-        return GameLogic.creatures.stream().filter((creature) -> creature != null && creature.scanArea(getScanRadius())).collect(Collectors.toCollection(ArrayList::new));
+        try {
+            return GameLogic.creatures.stream().filter((creature) -> creature != null && creature.scanArea(getScanRadius())).collect(Collectors.toCollection(ArrayList::new));
+        }
+        catch (ConcurrentModificationException e) { e.printStackTrace(); }
+        return new ArrayList<>();
     }
 
     @Override

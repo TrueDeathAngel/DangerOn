@@ -22,8 +22,8 @@ public class GameLogic
     public static boolean autoMode = false;
     public static int floorNumber;
 
-    public static ArrayList<Thread> enemiesControllers = new ArrayList<>();
-    public static ArrayList<Thread> gamePlayControllers = new ArrayList<>();
+    public static ArrayList<CreatureController> enemiesControllers = new ArrayList<>();
+    public static ArrayList<Controller> gamePlayControllers = new ArrayList<>();
     public static KeyStroke pressedKey = null;
     public static ArrayList<Creature> creatures = new ArrayList<>();
 
@@ -31,7 +31,7 @@ public class GameLogic
 
     public static Hero hero = new Hero("Player", 100, 5, 10);
 
-    private static final Point heroViewZone = new Point(12, 24);
+    private static final Point heroViewZone = new Point(18, 64);
     private static final int mapToMenuDistanceHorizontal = 8;
     private static ArrayList<String> stringsToDraw = new ArrayList<>(); // The first element is a header
     private static final ArrayList<String> log = new ArrayList<>();
@@ -41,8 +41,6 @@ public class GameLogic
 
     private static boolean[][] visibleCells;
     public static boolean noWarFog = false;
-
-    private static int logWidth = 30;
 
     public static void addToLog(String text) {
         if(log.size() >= 5) log.remove(0);
@@ -57,13 +55,13 @@ public class GameLogic
     public static void startGame() {
         refreshMap();
 
-        gamePlayControllers.add(new Thread(new EffectsController()));
+        gamePlayControllers.add(new EffectsController());
 
-        gamePlayControllers.add(new Thread(new HeroController(hero)));
+        gamePlayControllers.add(new HeroController(hero));
 
-        gamePlayControllers.add(new Thread(new KeyController()));
+        gamePlayControllers.add(new KeyController());
 
-        gamePlayControllers.forEach(Thread::start);
+        gamePlayControllers.forEach(Controller::start);
     }
 
     public static void refreshMap() {
@@ -79,11 +77,11 @@ public class GameLogic
     }
 
     public static void addEnemies() {
-        enemiesControllers.forEach(Thread::stop);
+        enemiesControllers.forEach(Controller::cancel);
         enemiesControllers.clear();
         creatures.clear();
 
-        int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms()) + 3;
+        int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms() * 10) + 3;
 
         for(int i = 0; i < 3 * numberOfEnemies / 4; i++)
             creatures.add(GameObjectFactory.spawnCreature());
@@ -92,9 +90,9 @@ public class GameLogic
 
         creatures.forEach((Creature::setStartPosition));
 
-        creatures.forEach((creature) -> enemiesControllers.add(new Thread(new CreatureController(creature))));
+        creatures.forEach((creature) -> enemiesControllers.add(new CreatureController(creature)));
 
-        enemiesControllers.forEach(Thread::start);
+        enemiesControllers.forEach(Controller::start);
     }
 
     public static void drawMap() {

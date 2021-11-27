@@ -1,4 +1,4 @@
-package com.company;
+package com.company.gameplay;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -6,18 +6,21 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class Controller implements Runnable {
 
-    private final ReadWriteLock pause = new ReentrantReadWriteLock();
+    private volatile boolean paused = false;
 
     private volatile boolean cancelled = false;
+
+    public boolean isPaused() {
+        return paused;
+    }
 
     @Override
     public void run() {
         try {
             while (!cancelled) {
 
-                blockIfPaused();
-
-                step();
+                if(!paused)
+                    step();
 
                 try {
                     TimeUnit.MILLISECONDS.sleep(10);
@@ -28,21 +31,12 @@ public abstract class Controller implements Runnable {
         }
     }
 
-    private void blockIfPaused() throws InterruptedException {
-        try {
-            pause.writeLock().lockInterruptibly();
-        } finally {
-            pause.writeLock().unlock();
-        }
-
-    }
-
     public void pause() {
-        pause.readLock().lock();
+        paused = true;
     }
 
     public void resume() {
-        pause.readLock().unlock();
+        paused = false;
     }
 
     public void cancel() {

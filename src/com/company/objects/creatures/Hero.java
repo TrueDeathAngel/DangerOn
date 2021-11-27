@@ -1,7 +1,7 @@
-package com.company.creatures;
+package com.company.objects.creatures;
 
-import com.company.GameLogic;
-import com.company.items.Weapon;
+import com.company.gameplay.GameLogic;
+import com.company.objects.items.Weapon;
 import com.company.magic.Spell;
 import com.company.map.CellTypes;
 import com.company.map.MapFactory;

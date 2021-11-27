@@ -1,19 +1,11 @@
 package com.company;
 
-import com.company.items.Weapon;
 import com.company.map.CellTypes;
-import com.company.recources.Colors;
-import com.company.recources.GameResources;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import com.googlecode.lanterna.terminal.swing.SwingTerminalFontConfiguration;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-
-import static com.company.GameLogic.*;
+import static com.company.gameplay.GameLogic.*;
 
 public class Main
 {
@@ -27,76 +19,7 @@ public class Main
     public static CellTypes[][] map;
 
     public static void main(String[] args) {
-        try {
-            defaultTerminalFactory.setTerminalEmulatorTitle("DungerOn " + GameResources.version);
-            try {
-                // Load a font and set its size
-                Font font = Font.createFont(Font.TRUETYPE_FONT, new File("SourceCodePro-Medium.ttf")).deriveFont(20f);
-
-                // Set the font for the terminal factory
-                defaultTerminalFactory.setTerminalEmulatorFontConfiguration(SwingTerminalFontConfiguration.newInstance(font));
-            }
-            // Handle exception :)
-            catch (FontFormatException e) { System.out.println("Unable to set the font: Wrong font format"); }
-
-            screen = defaultTerminalFactory.createScreen();
-
-            screen.startScreen();
-            screen.setCursorPosition(null);
-
-            terminalSize = screen.getTerminalSize();
-
-            hero.setWeapon(new Weapon("Cool Stick", 4, 1, 1));
-
-            GameLogic.startGame();
-
-            while (true) {
-                TerminalSize newSize = screen.doResizeIfNecessary();
-                if(newSize != null) {
-                    terminalSize = newSize;
-                    screen.clear();
-                }
-
-                if(gameOver) break;
-
-                if(!hero.isAlive()) {
-                    addToLog(Colors.GREEN + hero.getName() + Colors.RESET + " was slain");
-                    floorNumber = 0;
-                    refreshMap();
-                    hero.instantRecovery();
-                }
-
-                if(lastKeys.contains("gimme")) {
-                    isAdmin = !isAdmin;
-                    if(isAdmin)
-                        addToLog("Administrator rights have been issued to " + hero.getName());
-                    else {
-                        addToLog("Administrator rights were taken away from " + hero.getName());
-                        noWarFog = false;
-                    }
-                    lastKeys = "";
-                }
-
-                drawMap();
-
-                drawAllData();
-
-                screen.refresh();
-            }
-        }
-        catch (IOException ignored) {}
-        finally {
-            if (screen != null) {
-                try {
-                    screen.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            enemiesControllers.forEach(Controller::cancel);
-            gamePlayControllers.forEach(Controller::cancel);
-        }
+        gameLoop();
 
         /*Random = new Random();
 

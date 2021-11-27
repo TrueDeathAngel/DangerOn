@@ -1,7 +1,7 @@
-package com.company.creatures;
+package com.company.gameplay;
 
-import com.company.GameLogic;
-import com.company.Controller;
+import com.company.objects.creatures.Creature;
+import com.company.objects.creatures.Status;
 import com.company.recources.Colors;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -18,7 +18,7 @@ public class CreatureController extends Controller
     @Override
     public void step() {
         if(!creature.isAlive()) {
-            map[creature.position.x][creature.position.y] = creature.underCell;
+            map[creature.getPosition().x][creature.getPosition().y] = creature.getUnderCell();
             GameLogic.creatures.remove(creature);
             GameLogic.addToLog(Colors.RED + creature.getName() + Colors.RESET + " was slain. " + Colors.GOLDEN + "+ " + creature.getCost() + " XP" + Colors.RESET);
             GameLogic.hero.addExperiencePoints(creature.getCost());

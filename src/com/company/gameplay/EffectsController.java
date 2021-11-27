@@ -1,6 +1,5 @@
 package com.company.gameplay;
 
-import com.company.Controller;
 import com.googlecode.lanterna.TextColor;
 
 public class EffectsController extends Controller

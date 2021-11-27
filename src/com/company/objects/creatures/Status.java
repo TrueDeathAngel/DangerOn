@@ -1,4 +1,4 @@
-package com.company.creatures;
+package com.company.objects.creatures;
 
 public enum Status
 {

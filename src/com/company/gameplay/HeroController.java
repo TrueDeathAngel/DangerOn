@@ -1,15 +1,16 @@
-package com.company.creatures;
+package com.company.gameplay;
 
-import com.company.GameLogic;
-import com.company.Controller;
+import com.company.objects.creatures.Creature;
+import com.company.objects.creatures.Hero;
+import com.company.objects.creatures.Status;
 import com.googlecode.lanterna.input.KeyType;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static com.company.GameLogic.addToLog;
-import static com.company.GameLogic.pressedKey;
+import static com.company.gameplay.GameLogic.addToLog;
+import static com.company.gameplay.GameLogic.pressedKey;
 import static com.company.Main.*;
 
 public class HeroController extends Controller
@@ -55,8 +56,8 @@ public class HeroController extends Controller
             }
         }
         else {
-            try { TimeUnit.MILLISECONDS.sleep(1); }
-            catch (InterruptedException ignored) {}
+            //try { TimeUnit.MILLISECONDS.sleep(1); }
+            //catch (InterruptedException ignored) {}
             if(pressedKey != null)
             {
                 if(pressedKey.getKeyType() == KeyType.Escape || pressedKey.getKeyType() == KeyType.EOF)

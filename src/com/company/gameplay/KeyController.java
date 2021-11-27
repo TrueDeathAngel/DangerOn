@@ -1,12 +1,10 @@
 package com.company.gameplay;
 
-import com.company.GameLogic;
-import com.company.Controller;
 import com.googlecode.lanterna.input.KeyStroke;
 
 import java.io.IOException;
 
-import static com.company.GameLogic.*;
+import static com.company.gameplay.GameLogic.*;
 import static com.company.Main.*;
 
 public class KeyController extends Controller
@@ -30,11 +28,17 @@ public class KeyController extends Controller
                 pressedKey = keyStroke;
                 switch (GameLogic.pressedKey.getKeyType())
                 {
-                    case EOF, Escape ->
-                        gameOver = true;
+                    case EOF -> gameOver = true;
+                    case Escape -> { if(!isOpenedContextMenu) gameOver = true; }
                     case Character -> {
                         addPressedKey(pressedKey.getCharacter());
                         if(pressedKey.getCharacter() == 'a' || pressedKey.getCharacter() == 'ф') autoMode = !autoMode;
+                        else if((pressedKey.getCharacter() == 'i' || pressedKey.getCharacter() == 'ш') && !isOpenedContextMenu) {
+                            isOpenedContextMenu = true;
+                            enemiesControllers.forEach(Controller::pause);
+                            gamePlayControllers.forEach(Controller::pause);
+                            new ContextMenu().start();
+                        }
                         else if (isAdmin)
                             if ((pressedKey.getCharacter() == 'r' || pressedKey.getCharacter() == 'к') && canReloadMap)
                             {

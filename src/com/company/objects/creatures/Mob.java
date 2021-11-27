@@ -1,7 +1,7 @@
-package com.company.creatures;
+package com.company.objects.creatures;
 
-import com.company.items.Equipment;
-import com.company.items.Weapon;
+import com.company.objects.items.Equipment;
+import com.company.objects.items.Weapon;
 
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;

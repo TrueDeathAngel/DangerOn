@@ -1,8 +1,8 @@
-package com.company.creatures;
+package com.company.objects.creatures;
 
-import com.company.GameLogic;
-import com.company.GameObject;
-import com.company.items.Item;
+import com.company.gameplay.GameLogic;
+import com.company.objects.GameObject;
+import com.company.objects.items.Item;
 import com.company.map.CellTypes;
 
 import java.awt.*;
@@ -25,7 +25,7 @@ public class Creature extends GameObject
     private int slowness;
     protected char model;
     private int scanRadius = 2;
-    private ArrayList<Item> inventory;
+    public final ArrayList<Item> inventory = new ArrayList<>();
     protected CellTypes underCell;
     protected final int maxHitPoints;
 
@@ -57,6 +57,10 @@ public class Creature extends GameObject
     public int getAttackPower() { return attackPower; }
 
     public int getDamage() { return attackPower; }
+
+    public CellTypes getUnderCell() {
+        return underCell;
+    }
 
     public int getHitPoints() { return hitPoints; }
 

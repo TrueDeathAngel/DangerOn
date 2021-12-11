@@ -1,24 +1,23 @@
 package com.company.objects.creatures;
 
 import com.company.objects.items.Equipment;
+import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Mob extends Creature
-{
-    private HashMap<Equipment.EquipmentType, Equipment> equipmentItems = new HashMap();
-    private Weapon weapon;
+public class Mob extends Creature {
+    public final HashMap<Equipment.EquipmentType, Equipment> equipmentItems = new HashMap();
+    public Weapon weapon;
 
-    public Mob(String name, int maxHitPoints, int attackPower, int defencePoints)
-    {
+    public Mob(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name, maxHitPoints, attackPower, defencePoints);
         model = name.charAt(0);
     }
 
-    public Mob(String name, int maxHitPoints, int attackPower, int defencePoints, Weapon weapon)
-    {
+    public Mob(String name, int maxHitPoints, int attackPower, int defencePoints, Weapon weapon) {
         this(name, maxHitPoints, attackPower, defencePoints);
         setWeapon(weapon);
     }
@@ -43,6 +42,14 @@ public class Mob extends Creature
     }*/
 
     @Override
+    public ArrayList<Item> getItemsAfterDeath() {
+        ArrayList<Item> items = super.getItemsAfterDeath();
+        items.addAll(equipmentItems.values());
+        items.add(weapon);
+        return items;
+    }
+
+    @Override
     public int getDefencePoints()
     {
         return super.getDefencePoints() + equipmentItems.values().stream().mapToInt(Equipment::getDefencePoints).sum();
@@ -52,13 +59,6 @@ public class Mob extends Creature
 
     public void setWeapon(Weapon weapon) {
         this.weapon = weapon;
-    }
-
-    public void addEquipment(Equipment equipment)
-    {
-        if(!equipmentItems.containsKey(equipment.getEquipmentType()) ||
-                equipmentItems.get(equipment.getEquipmentType()).getDefencePoints() <= equipment.getDefencePoints())
-            equipmentItems.put(equipment.getEquipmentType(), equipment);
     }
 
     public HashMap<Equipment.EquipmentType, Equipment> getEquipmentItems()

@@ -1,6 +1,9 @@
 package com.company.gameplay;
 
+import com.company.map.CellTypes;
+import com.company.objects.items.Chest;
 import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 
 import java.io.IOException;
 
@@ -20,34 +23,36 @@ public class KeyController extends Controller
             canReloadMap = true;
             reloadMapCounter = 0;
         }
-        try
-        {
+        try {
             KeyStroke keyStroke= screen.pollInput();
             if (keyStroke != null)
             {
+                if (keyStroke.getKeyType() == KeyType.EOF) gameOver = true;
                 pressedKey = keyStroke;
-                switch (GameLogic.pressedKey.getKeyType())
-                {
-                    case EOF -> gameOver = true;
-                    case Escape -> { if(!isOpenedContextMenu) gameOver = true; }
-                    case Character -> {
-                        addPressedKey(pressedKey.getCharacter());
-                        if(pressedKey.getCharacter() == 'a' || pressedKey.getCharacter() == 'ф') autoMode = !autoMode;
-                        else if((pressedKey.getCharacter() == 'i' || pressedKey.getCharacter() == 'ш') && !isOpenedContextMenu) {
-                            isOpenedContextMenu = true;
-                            enemiesControllers.forEach(Controller::pause);
-                            gamePlayControllers.forEach(Controller::pause);
-                            new ContextMenu().start();
-                        }
-                        else if (isAdmin)
-                            if ((pressedKey.getCharacter() == 'r' || pressedKey.getCharacter() == 'к') && canReloadMap)
-                            {
-                                canReloadMap = false;
-                                refreshMap();
+
+                if (!isOpenedInventory)
+                    switch (GameLogic.pressedKey.getKeyType()) {
+                        case Escape -> gameOver = true;
+                        case Character -> {
+                            addPressedKey(pressedKey.getCharacter());
+                            if(pressedKey.getCharacter() == 'a' || pressedKey.getCharacter() == 'ф') autoMode = !autoMode;
+                            else if(pressedKey.getCharacter() == 'i' || pressedKey.getCharacter() == 'ш') {
+                                hero.openInventoryMenu();
                             }
-                            else if(pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
+                            else if(pressedKey.getCharacter() == 'o' || pressedKey.getCharacter() == 'щ') {
+                                floorEntities.stream()
+                                        .filter(floorEntity -> floorEntity.getEntityType() == CellTypes.CHEST && floorEntity.isCloseToHero())
+                                        .findAny()
+                                        .ifPresent(chest -> ((Chest) chest).open());
+                            }
+                            else if (isAdmin)
+                                if ((pressedKey.getCharacter() == 'r' || pressedKey.getCharacter() == 'к') && canReloadMap) {
+                                    canReloadMap = false;
+                                    refreshMap();
+                                }
+                                else if(pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
+                        }
                     }
-                }
             }
         }
         catch (NullPointerException | IOException ignored) {}

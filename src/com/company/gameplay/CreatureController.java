@@ -1,12 +1,15 @@
 package com.company.gameplay;
 
+import com.company.map.CellTypes;
 import com.company.objects.creatures.Creature;
 import com.company.objects.creatures.Status;
+import com.company.objects.items.Chest;
 import com.company.recources.Colors;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.Main.*;
+import static com.company.gameplay.GameLogic.*;
 
 public class CreatureController extends Controller
 {
@@ -18,11 +21,8 @@ public class CreatureController extends Controller
     @Override
     public void step() {
         if(!creature.isAlive()) {
-            map[creature.getPosition().x][creature.getPosition().y] = creature.getUnderCell();
-            GameLogic.creatures.remove(creature);
-            GameLogic.addToLog(Colors.RED + creature.getName() + Colors.RESET + " was slain. " + Colors.GOLDEN + "+ " + creature.getCost() + " XP" + Colors.RESET);
-            GameLogic.hero.addExperiencePoints(creature.getCost());
-            this.cancel();
+            creature.die();
+            cancel();
         }
         if(actionCounter++ >= creature.getSlowness() * 10) {
             actionCounter = 0;
@@ -32,8 +32,8 @@ public class CreatureController extends Controller
             if(creature.isCloseToHero()) creature.setStatus(Status.FIGHT);
             switch (creature.getStatus()) {
                 case IDLE -> { if(ThreadLocalRandom.current().nextInt(4) == 3) creature.move(); }
-                case CHASE -> creature.moveToTarget(GameLogic.hero);
-                case FIGHT -> GameLogic.hero.receiveDamage(creature.getAttackPower());
+                case CHASE -> creature.moveToTarget(hero);
+                case FIGHT -> hero.receiveDamage(creature.getAttackPower());
             }
         }
     }

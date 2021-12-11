@@ -1,7 +1,10 @@
 package com.company.gameplay;
 
+import com.company.objects.GameEntity;
 import com.company.objects.GameObjectFactory;
 import com.company.objects.creatures.*;
+import com.company.objects.items.Chest;
+import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
 import com.company.map.MapFactory;
@@ -29,11 +32,12 @@ public class GameLogic
     public static boolean autoMode = false;
     public static int floorNumber;
 
-    public static ArrayList<CreatureController> enemiesControllers = new ArrayList<>();
+    public static ArrayList<Controller> floorEntitiesControllers = new ArrayList<>();
     public static ArrayList<Controller> gamePlayControllers = new ArrayList<>();
     public static KeyController keyController = new KeyController();
     public static KeyStroke pressedKey = null;
-    public static ArrayList<Creature> creatures = new ArrayList<>();
+
+    public static ArrayList<GameEntity> floorEntities = new ArrayList<>();
 
     public static Hero hero = new Hero("Player", 100, 5, 10);
 
@@ -44,9 +48,13 @@ public class GameLogic
 
     public static String lastKeys = "";
     public static boolean isAdmin = false;
-    public static boolean isOpenedContextMenu = false;
     private static boolean[][] visibleCells;
     public static boolean noWarFog = false;
+
+    public static boolean isOpenedInventory = false;
+    public static Chest openedChest;
+    public static int inventoryCursorPosition = 0;
+    public static boolean inventoryWindowIsActive = true;
 
     public static void addToLog(String text) {
         if(log.size() >= 5) log.remove(0);
@@ -75,7 +83,7 @@ public class GameLogic
 
         map = MapFactory.createMap();
         visibleCells = new boolean[MapFactory.getMapHeightInCells()][MapFactory.getMapWidthInCells()];
-        hero.setStartPosition();
+        hero.setPosition();
 
         addEnemies();
 
@@ -83,22 +91,22 @@ public class GameLogic
     }
 
     public static void addEnemies() {
-        enemiesControllers.forEach(Controller::cancel);
-        enemiesControllers.clear();
-        creatures.clear();
+        floorEntitiesControllers.forEach(Controller::cancel);
+        floorEntitiesControllers.clear();
+        floorEntities.clear();
 
         int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms() * 10) + 3;
 
         for(int i = 0; i < 3 * numberOfEnemies / 4; i++)
-            creatures.add(GameObjectFactory.spawnCreature());
+            floorEntities.add(GameObjectFactory.spawnCreature());
         for(int i = 0; i < numberOfEnemies - 3 * numberOfEnemies / 4; i++)
-            creatures.add(GameObjectFactory.spawnMob());
+            floorEntities.add(GameObjectFactory.spawnMob());
 
-        creatures.forEach((Creature::setStartPosition));
+        floorEntities.forEach((GameEntity::setPosition));
 
-        creatures.forEach((creature) -> enemiesControllers.add(new CreatureController(creature)));
+        floorEntities.forEach((creature) -> floorEntitiesControllers.add(new CreatureController((Creature) creature)));
 
-        enemiesControllers.forEach(Controller::start);
+        floorEntitiesControllers.forEach(Controller::start);
     }
 
     public static void drawMap() {
@@ -115,27 +123,28 @@ public class GameLogic
                             [j + Math.max(0, Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y))]))
                     screen.setCharacter(j + 1, i + 2, new TextCharacter('#'));
                     else
-                        switch (map[i + Math.max(0, Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x))]
+                        screen.setCharacter(j + 1, i + 2,
+                                switch (map[i + Math.max(0, Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x))]
                                 [j + Math.max(0, Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y))]) {
-                            case EMPTY, SAFE_AREA -> screen.setCharacter(j + 1, i + 2, new TextCharacter(' '));
-                            case LAVA -> screen.setCharacter(j + 1, i + 2, new TextCharacter(
+                                    case EMPTY, SAFE_AREA, CREATURE, HERO, CHEST -> new TextCharacter(' ');
+                            case LAVA -> new TextCharacter(
                                     '▉',
                                     getLavaColor(),
-                                    TextColor.ANSI.DEFAULT));
-                            case VERTICAL_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter(Symbols.BOLD_SINGLE_LINE_VERTICAL));
-                            case HORIZONTAL_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter(Symbols.BOLD_SINGLE_LINE_HORIZONTAL));
-                            case TOP_LEFT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┏'));
-                            case TOP_RIGHT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┓'));
-                            case BOTTOM_RIGHT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┛'));
-                            case BOTTOM_LEFT_CORNER_WALL -> screen.setCharacter(j + 1, i + 2, new TextCharacter('┗'));
-                            case DOOR -> screen.setCharacter(j + 1, i + 2, new TextCharacter('&'));
-                        }
+                                    TextColor.ANSI.DEFAULT);
+                            case VERTICAL_WALL -> new TextCharacter(Symbols.BOLD_SINGLE_LINE_VERTICAL);
+                            case HORIZONTAL_WALL -> new TextCharacter(Symbols.BOLD_SINGLE_LINE_HORIZONTAL);
+                            case TOP_LEFT_CORNER_WALL -> new TextCharacter('┏');
+                            case TOP_RIGHT_CORNER_WALL -> new TextCharacter('┓');
+                            case BOTTOM_RIGHT_CORNER_WALL -> new TextCharacter('┛');
+                            case BOTTOM_LEFT_CORNER_WALL -> new TextCharacter('┗');
+                            case DOOR -> new TextCharacter('&');
+                        });
         } catch (ArrayIndexOutOfBoundsException ignored) {}
 
         drawRectangle(new TerminalPosition(0, 0), new TerminalSize(heroViewZone.y + 2, heroViewZone.x + 2), "Floor #" + floorNumber);
 
         try {
-            creatures.forEach((creature) -> {
+            floorEntities.forEach((creature) -> {
                 if(creature.getPosition() != null
                         && creature.getPosition().y >= Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y)
                         && creature.getPosition().y < Math.max(hero.getPosition().y + heroViewZone.y / 2, heroViewZone.y)
@@ -216,13 +225,14 @@ public class GameLogic
 
     public static void drawData(TerminalPosition topLeft) {
         TextGraphics textGraphics = screen.newTextGraphics();
+        TerminalSize size = new TerminalSize(
+                stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2,
+                stringsToDraw.size() + 1);
+        textGraphics.fillRectangle(topLeft, size, ' ');
 
         drawRectangle(
                 topLeft,
-                new TerminalSize(
-                        stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2,
-                        stringsToDraw.size() + 1
-                ),
+                size,
                 stringsToDraw.get(0)
         );
 
@@ -251,7 +261,7 @@ public class GameLogic
                 "Attack Power: " + (hero.getAttackPower() + hero.getWeaponAttackPower()),
                 "Current Level: " + hero.getCurrentLevel(),
                 "Experience Points: " + hero.getExperiencePoints() + '/' + hero.getExperiencePointsForNextLevel(),
-                "Number of enemies: " + creatures.size(),
+                "Number of enemies: " + floorEntities.size(),
                 "Number of rooms: " + MapFactory.getNumberOfRooms()
         ));
 
@@ -261,8 +271,22 @@ public class GameLogic
         stringsToDraw = new ArrayList<>(List.of(
                 "Controls",
                 "D - attack | A - auto mode",
-                "Esc - exit | R - regenerate map"
+                "Esc - exit | R - regenerate map",
+                "O - open chest | I - open inventory"
         ));
+
+        if (isOpenedInventory) {
+            stringsToDraw.addAll(List.of(
+                    String.valueOf(Symbols.SINGLE_LINE_HORIZONTAL).repeat(stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2),
+                    "C - clear selected container"
+            ));
+            if (openedChest != null) stringsToDraw.add("S - put/take item");
+            Item item = null;
+            if (inventoryWindowIsActive) {
+                if (!hero.inventory.isEmpty()) item = hero.inventory.get(inventoryCursorPosition);}
+            else if (openedChest != null && !openedChest.items.isEmpty()) item = openedChest.items.get(inventoryCursorPosition);
+            if (item instanceof Equipment || item instanceof Weapon) stringsToDraw.add("E - equip");
+        }
 
         drawData(new TerminalPosition(heroViewZone.y + mapToMenuDistanceHorizontal + 2, 11));
 
@@ -271,18 +295,31 @@ public class GameLogic
         stringsToDraw.addAll(log);
 
         drawData(new TerminalPosition(0, heroViewZone.x + 5));
+
+        if (isOpenedInventory) drawInventoryMenu();
     }
 
-    private static void drawContextMenu() {
-        if(isOpenedContextMenu) {
-            stringsToDraw.clear();
-            stringsToDraw.add("Inventory");
+    private static void drawInventoryMenu() {
+        stringsToDraw.add("Inventory");
+        if (!hero.inventory.isEmpty()) {
             stringsToDraw.addAll(hero.inventory.stream().map(Item::getName).collect(Collectors.toList()));
-            drawData(new TerminalPosition(0, 0));
+            if (inventoryWindowIsActive)
+                stringsToDraw.set(inventoryCursorPosition + 1, Colors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + Colors.RESET);
+        }
+        int inventoryMenuWidth = stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2;
+        drawData(new TerminalPosition(0, 0));
+        if(openedChest != null) {
+            stringsToDraw.add(openedChest.getName());
+            if (!openedChest.items.isEmpty()) {
+                stringsToDraw.addAll(openedChest.items.stream().map(Item::getName).collect(Collectors.toList()));
+                if (!inventoryWindowIsActive) stringsToDraw.set(inventoryCursorPosition + 1, Colors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + Colors.RESET);
+            }
+            drawData(new TerminalPosition(inventoryMenuWidth, 0));
         }
     }
 
     public static void gameLoop() {
+
         try {
             defaultTerminalFactory.setTerminalEmulatorTitle("DangeredOn " + GameResources.version);
             try {
@@ -322,7 +359,7 @@ public class GameLogic
                     hero.instantRecovery();
                 }
 
-                if(lastKeys.contains("gimme")) {
+                if(lastKeys.contains("glmme")) {
                     isAdmin = !isAdmin;
                     if(isAdmin)
                         addToLog("Administrator rights have been issued to " + hero.getName());
@@ -335,7 +372,6 @@ public class GameLogic
 
                 drawMap();
                 drawAllData();
-                if(isOpenedContextMenu) drawContextMenu();
 
                 screen.refresh();
             }
@@ -350,7 +386,7 @@ public class GameLogic
                 }
             }
 
-            enemiesControllers.forEach(Controller::cancel);
+            floorEntitiesControllers.forEach(Controller::cancel);
             gamePlayControllers.forEach(Controller::cancel);
             keyController.cancel();
         }

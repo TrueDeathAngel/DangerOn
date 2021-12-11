@@ -1,6 +1,9 @@
 package com.company.objects.creatures;
 
+import com.company.gameplay.InventoryMenu;
+import com.company.gameplay.Controller;
 import com.company.gameplay.GameLogic;
+import com.company.objects.GameEntity;
 import com.company.objects.items.Weapon;
 import com.company.magic.Spell;
 import com.company.map.CellTypes;
@@ -12,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.company.Main.map;
+import static com.company.gameplay.GameLogic.*;
 
 public class Hero extends Mob
 {
@@ -21,8 +25,7 @@ public class Hero extends Mob
     private int karma = 0;
     private ArrayList<Spell<?>> spells = new ArrayList<>(3);
 
-    public Hero(String name, int maxHitPoints, int attackPower, int defencePoints)
-    {
+    public Hero(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name, maxHitPoints, attackPower, defencePoints);
         model = '@';
         setSlowness(3);
@@ -53,8 +56,7 @@ public class Hero extends Mob
 
     public ArrayList<Spell<?>> getSpells(){ return spells; }
 
-    public void showSpells()
-    {
+    public void showSpells() {
         System.out.println(getName() + "'s spells:");
         for(Spell<?> spell : spells) { System.out.println(spell.getSpell().getName()); }
     }
@@ -64,26 +66,43 @@ public class Hero extends Mob
         return (currentLevel >= weapon.getRequiredLevel());
     }
 
-    public ArrayList<Creature> scanAreaForTargets()
-    {
+    public ArrayList<GameEntity> scanAreaForTargets() {
         try {
-            return GameLogic.creatures.stream().filter((creature) -> creature != null && creature.scanArea(getScanRadius())).collect(Collectors.toCollection(ArrayList::new));
+            return GameLogic.floorEntities.stream().filter((gameEntity) -> gameEntity != null && gameEntity.scanArea(getScanRadius())).collect(Collectors.toCollection(ArrayList::new));
         }
-        catch (ConcurrentModificationException e) { e.printStackTrace(); }
+        catch (ConcurrentModificationException e) { System.out.println(e.getMessage()); }
         return new ArrayList<>();
     }
 
     @Override
-    public ArrayList<CellTypes> getAllowedCells()
-    {
+    public ArrayList<CellTypes> getAllowedCells() {
         return new ArrayList<>(List.of(CellTypes.EMPTY, CellTypes.DOOR, CellTypes.SAFE_AREA));
     }
 
     @Override
-    public void setStartPosition()
-    {
+    public void setPosition() {
         position = MapFactory.getHeroStartPosition();
         map[position.x][position.y] = getEntityType();
         underCell = CellTypes.SAFE_AREA;
+    }
+
+    public void openInventory() {
+        isOpenedInventory = true;
+        inventoryWindowIsActive = true;
+        inventoryCursorPosition = 0;
+        floorEntitiesControllers.forEach(Controller::pause);
+        gamePlayControllers.forEach(Controller::pause);
+    }
+
+    public void openInventoryMenu() {
+        openInventory();
+        new InventoryMenu().start();
+    }
+
+    public void closeInventory() {
+        isOpenedInventory = false;
+        openedChest = null;
+        gamePlayControllers.forEach(Controller::resume);
+        floorEntitiesControllers.forEach(Controller::resume);
     }
 }

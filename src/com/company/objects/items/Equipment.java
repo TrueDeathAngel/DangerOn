@@ -3,7 +3,7 @@ package com.company.objects.items;
 public class Equipment extends Item
 {
     private int defencePoints;
-    private EquipmentType equipmentType;
+    private final EquipmentType equipmentType;
 
     public Equipment(String name, int price, int defencePoints, EquipmentType equipmentType)
     {

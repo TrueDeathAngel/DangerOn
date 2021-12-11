@@ -1,5 +1,6 @@
 package com.company.gameplay;
 
+import com.company.objects.GameEntity;
 import com.company.objects.creatures.Creature;
 import com.company.objects.creatures.Hero;
 import com.company.objects.creatures.Status;
@@ -7,7 +8,6 @@ import com.googlecode.lanterna.input.KeyType;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
 import static com.company.gameplay.GameLogic.addToLog;
 import static com.company.gameplay.GameLogic.pressedKey;
@@ -16,8 +16,8 @@ import static com.company.Main.*;
 public class HeroController extends Controller
 {
     public Hero hero;
-    public Creature target;
-    ArrayList<Creature> targets;
+    public GameEntity target;
+    ArrayList<GameEntity> targets;
     private int actionCounter = 0;
 
     public HeroController(Hero hero) { this.hero = hero; }
@@ -56,8 +56,6 @@ public class HeroController extends Controller
             }
         }
         else {
-            //try { TimeUnit.MILLISECONDS.sleep(1); }
-            //catch (InterruptedException ignored) {}
             if(pressedKey != null)
             {
                 if(pressedKey.getKeyType() == KeyType.Escape || pressedKey.getKeyType() == KeyType.EOF)
@@ -74,9 +72,9 @@ public class HeroController extends Controller
                                 targets = hero.scanAreaForTargets();
                                 if(targets.size() > 0) {
                                     targets.stream()
-                                            .filter(creature -> creature.scanArea(1))
+                                            .filter(GameEntity::isCloseToHero)
                                             .findAny()
-                                            .ifPresent(creature -> creature.receiveDamage(hero.getDamage()));
+                                            .ifPresent(floorEntity -> floorEntity.receiveDamage(hero.getDamage()));
                                 }
                             }
                         }

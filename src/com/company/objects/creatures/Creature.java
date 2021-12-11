@@ -1,9 +1,13 @@
 package com.company.objects.creatures;
 
+import com.company.gameplay.ChestController;
 import com.company.gameplay.GameLogic;
+import com.company.objects.GameEntity;
 import com.company.objects.GameObject;
+import com.company.objects.items.Chest;
 import com.company.objects.items.Item;
 import com.company.map.CellTypes;
+import com.company.recources.Colors;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -12,26 +16,21 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.Main.map;
+import static com.company.gameplay.GameLogic.*;
+import static com.company.gameplay.GameLogic.hero;
 
-public class Creature extends GameObject
+public class Creature extends GameEntity
 {
-    private static int creaturesId;
-    public final int id;
-    private int hitPoints;
     private final int attackPower;
     private final int defencePoints;
     private Status status = Status.IDLE;
-    protected Point position;
     private int slowness;
-    protected char model;
     private int scanRadius = 2;
     public final ArrayList<Item> inventory = new ArrayList<>();
-    protected CellTypes underCell;
     protected final int maxHitPoints;
 
     public Creature(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name);
-        id = creaturesId++;
         slowness = ThreadLocalRandom.current().nextInt(5) + 2;
         model = Character.toLowerCase(name.charAt(0));
         this.hitPoints = maxHitPoints;
@@ -58,32 +57,13 @@ public class Creature extends GameObject
 
     public int getDamage() { return attackPower; }
 
-    public CellTypes getUnderCell() {
-        return underCell;
-    }
-
-    public int getHitPoints() { return hitPoints; }
-
     public int getDefencePoints() { return defencePoints; }
 
     public int getScanRadius() { return scanRadius; }
 
     public void setScanRadius(int scanRadius) { this.scanRadius = scanRadius; }
 
-    public Point getPosition() { return position; }
-
-    public void setPosition(Point position)
-    {
-            this.position = position;
-    }
-
-    public void setStartPosition()
-    {
-        position = getFreePoint();
-    }
-
-    public char getModel() { return model; }
-
+    @Override
     public void receiveDamage(int damage) {
         int defence = getDefencePoints();
         if(damage > defence) hitPoints -= damage - defence;
@@ -91,8 +71,6 @@ public class Creature extends GameObject
     }
 
     public void instantRecovery() { hitPoints = maxHitPoints; }
-
-    public boolean isAlive() { return getHitPoints() > 0; }
 
     public void move()
     {
@@ -117,9 +95,9 @@ public class Creature extends GameObject
         move(point.x, point.y);
     }
 
-    public void moveToTarget(Creature creature) {
-        int dx = creature.getPosition().x - position.x;
-        int dy = creature.getPosition().y - position.y;
+    public void moveToTarget(GameEntity gameEntity) {
+        int dx = gameEntity.getPosition().x - position.x;
+        int dy = gameEntity.getPosition().y - position.y;
         if(dy != 0 && canMove(0, dy / Math.abs(dy))) move(0, dy / Math.abs(dy));
         else if(dx != 0 && canMove(dx / Math.abs(dx), 0)) move(dx / Math.abs(dx), 0);
     }
@@ -135,28 +113,10 @@ public class Creature extends GameObject
         return false;
     }
 
+    @Override
     public CellTypes getEntityType()
     {
         return CellTypes.CREATURE;
-    }
-
-    public ArrayList<CellTypes> getAllowedCells()
-    {
-        return new ArrayList<>(List.of(CellTypes.EMPTY));
-    }
-
-    public boolean scanArea(int scanRadius) {
-        return Math.pow(position.x - GameLogic.hero.getPosition().x, 2) + Math.pow(position.y - GameLogic.hero.getPosition().y, 2) <= Math.pow(scanRadius, 2);
-    }
-
-    public boolean scanArea()
-    {
-        return scanArea(scanRadius);
-    }
-
-    public boolean isCloseToHero()
-    {
-        return scanArea(1);
     }
 
     public Point chooseNextPosition() {
@@ -179,20 +139,24 @@ public class Creature extends GameObject
         return new Point(0, 0);
     }
 
-    public Point getFreePoint()
-    {
-        Random random = new Random();
-        int x, y;
-        while (true)
-        {
-            x = random.nextInt(map.length);
-            y = random.nextInt(map[x].length);
-            if(getAllowedCells().contains(map[x][y]))
-            {
-                underCell = map[x][y];
-                map[x][y] = getEntityType();
-                return new Point(x ,y);
-            }
-        }
+    public boolean scanArea() {
+        return scanArea(scanRadius);
+    }
+
+    public ArrayList<Item> getItemsAfterDeath() {
+        return inventory;
+    }
+
+    @Override
+    public void die() {
+        floorEntities.remove(this);
+        map[position.x][position.y] = CellTypes.CHEST;
+        Chest chest = new Chest(getName(), position, getItemsAfterDeath(), underCell);
+        floorEntities.add(chest);
+        ChestController chestController = new ChestController(chest);
+        floorEntitiesControllers.add(chestController);
+        chestController.start();
+        addToLog(Colors.RED + getName() + Colors.RESET + " was slain. " + Colors.GOLDEN + "+ " + getCost() + " XP" + Colors.RESET);
+        hero.addExperiencePoints(getCost());
     }
 }

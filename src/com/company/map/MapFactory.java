@@ -38,9 +38,9 @@ public class MapFactory
         safeRoomNumbers.clear();
         safeRoomNumbers.add(0);
 
-        for(int i = ThreadLocalRandom.current().nextInt((int)Math.sqrt(mapHeight * mapWidth)); i > 0; i--)
-        {//System.out.println(i);
-            safeRoomNumbers.add(ThreadLocalRandom.current().nextInt(mapHeight * mapWidth));}
+        for(int i = ThreadLocalRandom.current().nextInt((int)Math.sqrt(mapHeight * mapWidth)); i > 0; i--) {
+            safeRoomNumbers.add(ThreadLocalRandom.current().nextInt(mapHeight * mapWidth));
+        }
 
         CellTypes[][] map = new CellTypes[roomMaxHeight * mapHeight][roomMaxWidth * mapWidth];
 

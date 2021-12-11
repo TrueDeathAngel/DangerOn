@@ -47,5 +47,5 @@ public abstract class Controller implements Runnable {
         new Thread(this).start();
     }
 
-    public abstract void step() throws Exception;
+    public abstract void step();
 }

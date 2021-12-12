@@ -3,10 +3,13 @@ package com.company.objects.creatures;
 import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
+import com.company.recources.Colors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static com.company.gameplay.GameLogic.*;
 
 public class Mob extends Creature {
     public final HashMap<Equipment.EquipmentType, Equipment> equipmentItems = new HashMap();
@@ -42,8 +45,8 @@ public class Mob extends Creature {
     }*/
 
     @Override
-    public ArrayList<Item> getItemsAfterDeath() {
-        ArrayList<Item> items = super.getItemsAfterDeath();
+    public ArrayList<Item> getLoot() {
+        ArrayList<Item> items = super.getLoot();
         items.addAll(equipmentItems.values());
         items.add(weapon);
         return items;
@@ -58,11 +61,22 @@ public class Mob extends Creature {
     public int getWeaponAttackPower() { return weapon != null ? weapon.getAttackPower() : 0; }
 
     public void setWeapon(Weapon weapon) {
+        if (this.weapon != null) inventory.addItem(this.weapon);
         this.weapon = weapon;
     }
 
     public HashMap<Equipment.EquipmentType, Equipment> getEquipmentItems()
     {
         return equipmentItems;
+    }
+
+    public void equip(Item item) {
+        inventory.removeByIndex(inventoryCursorPosition);
+        Equipment.EquipmentType type = ((Equipment) item).getEquipmentType();
+        if (equipmentItems.containsKey(type)) {
+            inventory.addItem(hero.equipmentItems.get(type));
+        }
+        hero.equipmentItems.put(type, (Equipment) item);
+        addToLog(Colors.GOLDEN + item.getName() + Colors.RESET + " equipped");
     }
 }

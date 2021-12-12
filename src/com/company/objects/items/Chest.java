@@ -6,17 +6,13 @@ import com.company.map.CellTypes;
 import com.company.objects.GameEntity;
 
 import java.awt.*;
-import java.util.ArrayList;
-
 import static com.company.gameplay.GameLogic.*;
 
 public class Chest extends GameEntity {
-    public final ArrayList<Item> items;
 
-    public Chest(String name, Point position, ArrayList<Item> items, CellTypes underCell) {
+    public Chest(String name, Point position, CellTypes underCell) {
         super(name);
         this.position = position;
-        this.items = items;
         this.underCell = underCell;
         this.model = '†';
     }
@@ -29,7 +25,7 @@ public class Chest extends GameEntity {
 
     @Override
     public void receiveDamage(int damage) {
-        if(items.isEmpty()) super.receiveDamage(damage);
+        if(!inventory.isNotEmpty()) super.receiveDamage(damage);
         else addToLog("Cannot break a non-empty chest!");
     }
 

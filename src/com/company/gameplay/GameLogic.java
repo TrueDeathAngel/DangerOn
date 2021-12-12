@@ -145,7 +145,7 @@ public class GameLogic
 
         try {
             floorEntities.forEach((creature) -> {
-                if(creature.getPosition() != null
+                if(creature != null && creature.getPosition() != null
                         && creature.getPosition().y >= Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y)
                         && creature.getPosition().y < Math.max(hero.getPosition().y + heroViewZone.y / 2, heroViewZone.y)
                         && creature.getPosition().x >= Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x)
@@ -283,8 +283,8 @@ public class GameLogic
             if (openedChest != null) stringsToDraw.add("S - put/take item");
             Item item = null;
             if (inventoryWindowIsActive) {
-                if (!hero.inventory.isEmpty()) item = hero.inventory.get(inventoryCursorPosition);}
-            else if (openedChest != null && !openedChest.items.isEmpty()) item = openedChest.items.get(inventoryCursorPosition);
+                if (hero.inventory.isNotEmpty()) item = hero.inventory.getByIndex(inventoryCursorPosition);}
+            else if (openedChest != null && openedChest.inventory.isNotEmpty()) item = openedChest.inventory.getByIndex(inventoryCursorPosition);
             if (item instanceof Equipment || item instanceof Weapon) stringsToDraw.add("E - equip");
         }
 
@@ -296,13 +296,16 @@ public class GameLogic
 
         drawData(new TerminalPosition(0, heroViewZone.x + 5));
 
-        if (isOpenedInventory) drawInventoryMenu();
+        if (isOpenedInventory)
+            try {
+                drawInventoryMenu();
+            } catch (ConcurrentModificationException ignored) {}
     }
 
-    private static void drawInventoryMenu() {
+    private static void drawInventoryMenu() throws ConcurrentModificationException {
         stringsToDraw.add("Inventory");
-        if (!hero.inventory.isEmpty()) {
-            stringsToDraw.addAll(hero.inventory.stream().map(Item::getName).collect(Collectors.toList()));
+        if (hero.inventory.isNotEmpty()) {
+            stringsToDraw.addAll(hero.inventory.getItems().stream().map(Item::getName).collect(Collectors.toList()));
             if (inventoryWindowIsActive)
                 stringsToDraw.set(inventoryCursorPosition + 1, Colors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + Colors.RESET);
         }
@@ -310,8 +313,8 @@ public class GameLogic
         drawData(new TerminalPosition(0, 0));
         if(openedChest != null) {
             stringsToDraw.add(openedChest.getName());
-            if (!openedChest.items.isEmpty()) {
-                stringsToDraw.addAll(openedChest.items.stream().map(Item::getName).collect(Collectors.toList()));
+            if (openedChest.inventory.isNotEmpty()) {
+                stringsToDraw.addAll(openedChest.inventory.getItems().stream().map(Item::getName).collect(Collectors.toList()));
                 if (!inventoryWindowIsActive) stringsToDraw.set(inventoryCursorPosition + 1, Colors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + Colors.RESET);
             }
             drawData(new TerminalPosition(inventoryMenuWidth, 0));

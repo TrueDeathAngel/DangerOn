@@ -1,10 +1,8 @@
 package com.company.objects;
 
-import com.company.gameplay.ChestController;
 import com.company.gameplay.GameLogic;
 import com.company.map.CellTypes;
-import com.company.objects.items.Chest;
-import com.company.recources.Colors;
+import com.company.objects.items.Item;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -13,7 +11,6 @@ import java.util.Random;
 
 import static com.company.Main.map;
 import static com.company.gameplay.GameLogic.*;
-import static com.company.gameplay.GameLogic.hero;
 
 public abstract class GameEntity extends GameObject {
     private static int creaturesId;
@@ -22,9 +19,11 @@ public abstract class GameEntity extends GameObject {
     protected int hitPoints = 10;
     public CellTypes underCell;
     protected char model = '?';
+    public final Container inventory;
 
     public GameEntity(String name) {
         super(name);
+        inventory = new Container(name + "'s inventory");
         id = creaturesId++;
     }
 
@@ -82,5 +81,9 @@ public abstract class GameEntity extends GameObject {
     public void die() {
         floorEntities.remove(this);
         map[position.x][position.y] = underCell;
+    }
+
+    public ArrayList<Item> getLoot() {
+        return inventory.getItems();
     }
 }

@@ -1,18 +1,13 @@
 package com.company.objects.creatures;
 
 import com.company.gameplay.ChestController;
-import com.company.gameplay.GameLogic;
 import com.company.objects.GameEntity;
-import com.company.objects.GameObject;
 import com.company.objects.items.Chest;
-import com.company.objects.items.Item;
 import com.company.map.CellTypes;
 import com.company.recources.Colors;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.Main.map;
@@ -26,7 +21,6 @@ public class Creature extends GameEntity
     private Status status = Status.IDLE;
     private int slowness;
     private int scanRadius = 2;
-    public final ArrayList<Item> inventory = new ArrayList<>();
     protected final int maxHitPoints;
 
     public Creature(String name, int maxHitPoints, int attackPower, int defencePoints) {
@@ -143,15 +137,12 @@ public class Creature extends GameEntity
         return scanArea(scanRadius);
     }
 
-    public ArrayList<Item> getItemsAfterDeath() {
-        return inventory;
-    }
-
     @Override
     public void die() {
         floorEntities.remove(this);
         map[position.x][position.y] = CellTypes.CHEST;
-        Chest chest = new Chest(getName(), position, getItemsAfterDeath(), underCell);
+        Chest chest = new Chest(getName() + " items' chest", position, underCell);
+        chest.inventory.addAllItems(getLoot());
         floorEntities.add(chest);
         ChestController chestController = new ChestController(chest);
         floorEntitiesControllers.add(chestController);

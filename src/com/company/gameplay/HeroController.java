@@ -1,7 +1,6 @@
 package com.company.gameplay;
 
 import com.company.objects.GameEntity;
-import com.company.objects.creatures.Creature;
 import com.company.objects.creatures.Hero;
 import com.company.objects.creatures.Status;
 import com.googlecode.lanterna.input.KeyType;

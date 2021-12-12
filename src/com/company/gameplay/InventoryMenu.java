@@ -1,11 +1,10 @@
 package com.company.gameplay;
 
+import com.company.objects.Container;
 import com.company.objects.items.Chest;
 import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
-
-import java.util.ArrayList;
 
 import static com.company.Main.gameOver;
 import static com.company.gameplay.GameLogic.*;
@@ -37,7 +36,7 @@ public class InventoryMenu extends Controller {
                         inventoryCursorPosition--;
                 }
                 case ArrowDown -> {
-                    if(inventoryCursorPosition < (inventoryWindowIsActive ? hero.inventory.size() : chest.items.size()) - 1)
+                    if(inventoryCursorPosition < (inventoryWindowIsActive ? hero.inventory.getSize() : chest.inventory.getSize()) - 1)
                         inventoryCursorPosition++;
                 }
                 case ArrowLeft, ArrowRight -> {
@@ -48,42 +47,35 @@ public class InventoryMenu extends Controller {
                 }
                 case Character -> {
                     if (chest != null && (pressedKey.getCharacter() == 's' || pressedKey.getCharacter() == 'ы')) {
-                        if (inventoryWindowIsActive && !hero.inventory.isEmpty()) {
-                            Item item = hero.inventory.get(inventoryCursorPosition);
-                            hero.inventory.remove(item);
-                            chest.items.add(item);
-                        } else if (!chest.items.isEmpty()) {
-                            Item item = chest.items.get(inventoryCursorPosition);
-                            chest.items.remove(item);
-                            hero.inventory.add(item);
+                        if (inventoryWindowIsActive && hero.inventory.isNotEmpty()) {
+                            Item item = hero.inventory.getByIndex(inventoryCursorPosition);
+                            hero.inventory.removeByIndex(inventoryCursorPosition);
+                            chest.inventory.addItem(item);
+                        } else if (chest.inventory.isNotEmpty()) {
+                            Item item = chest.inventory.getByIndex(inventoryCursorPosition);
+                            chest.inventory.removeByIndex(inventoryCursorPosition);
+                            hero.inventory.addItem(item);
                         }
                         inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
                     }
                     else if (pressedKey.getCharacter() == 'e' || pressedKey.getCharacter() == 'у') {
-                        ArrayList<Item> container;
+                        Container container;
                         if (inventoryWindowIsActive) {
                             container = hero.inventory;
                             }
-                        else container = chest.items;
-                        if (!container.isEmpty()) {
-
-                            Item item = container.get(inventoryCursorPosition);
+                        else container = chest.inventory;
+                        if (container.isNotEmpty()) {
+                            Item item = container.getByIndex(inventoryCursorPosition);
                             if (item instanceof Equipment) {
-                                Equipment.EquipmentType type = ((Equipment) item).getEquipmentType();
-                                if (hero.equipmentItems.containsKey(type)) {
-                                    container.add(hero.equipmentItems.get(type));
-                                }
-                                hero.equipmentItems.put(type, (Equipment) item);
-                                container.remove(item);
+                                hero.equip(item);
                             } else if (item instanceof Weapon) {
-                                if (hero.weapon != null) container.add(hero.weapon);
-                                hero.weapon = (Weapon) item;
-                                container.remove(item);
+                                hero.setWeapon((Weapon) item);
+                                container.removeByIndex(inventoryCursorPosition);
                             }
                         }
                     } else if (pressedKey.getCharacter() == 'c' || pressedKey.getCharacter() == 'с') {
                         if (inventoryWindowIsActive) hero.inventory.clear();
-                        else chest.items.clear();
+                        else chest.inventory.clear();
                     }
                 }
             }

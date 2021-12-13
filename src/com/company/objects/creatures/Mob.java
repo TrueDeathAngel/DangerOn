@@ -3,7 +3,8 @@ package com.company.objects.creatures;
 import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
-import com.company.recources.Colors;
+import com.googlecode.lanterna.TextCharacter;
+import com.googlecode.lanterna.TextColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class Mob extends Creature {
 
     public Mob(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name, maxHitPoints, attackPower, defencePoints);
-        model = name.charAt(0);
+        model = new TextCharacter(name.charAt(0), TextColor.ANSI.RED, TextColor.ANSI.DEFAULT);
     }
 
     public Mob(String name, int maxHitPoints, int attackPower, int defencePoints, Weapon weapon) {
@@ -77,6 +78,5 @@ public class Mob extends Creature {
             inventory.addItem(hero.equipmentItems.get(type));
         }
         hero.equipmentItems.put(type, (Equipment) item);
-        addToLog(Colors.GOLDEN + item.getName() + Colors.RESET + " equipped");
     }
 }

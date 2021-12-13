@@ -2,7 +2,10 @@ package com.company.objects;
 
 import com.company.gameplay.GameLogic;
 import com.company.map.CellTypes;
+import com.company.objects.items.Container;
 import com.company.objects.items.Item;
+import com.googlecode.lanterna.TextCharacter;
+import com.googlecode.lanterna.TextColor;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,13 +21,17 @@ public abstract class GameEntity extends GameObject {
     public Point position;
     protected int hitPoints = 10;
     public CellTypes underCell;
-    protected char model = '?';
+    public TextCharacter model = new TextCharacter('?', TextColor.ANSI.YELLOW, TextColor.ANSI.DEFAULT);
     public final Container inventory;
 
-    public GameEntity(String name) {
+    public GameEntity(String name, int inventorySize) {
         super(name);
-        inventory = new Container(name + "'s inventory");
+        inventory = new Container(name + "'s inventory", inventorySize);
         id = creaturesId++;
+    }
+
+    public GameEntity(String name) {
+        this(name, 10);
     }
 
     public Point getPosition() { return position; }
@@ -36,8 +43,6 @@ public abstract class GameEntity extends GameObject {
     public void setPosition(Point position) {
         this.position = position;
     }
-
-    public char getModel() { return model; }
 
     public ArrayList<CellTypes> getAllowedCells()
     {
@@ -53,8 +58,9 @@ public abstract class GameEntity extends GameObject {
         while (true)
         {
             int x = random.nextInt(map.length), y = random.nextInt(map[x].length);
-            if(getAllowedCells().contains(map[x][y]))
-            {
+            if(getAllowedCells().contains(map[x][y])
+                    && (getAllowedCells().contains(map[x + 1][y]) && getAllowedCells().contains(map[x - 1][y])
+                        || (getAllowedCells().contains(map[x][y + 1]) && getAllowedCells().contains(map[x][y - 1])))) {
                 underCell = map[x][y];
                 map[x][y] = getEntityType();
                 return new Point(x ,y);

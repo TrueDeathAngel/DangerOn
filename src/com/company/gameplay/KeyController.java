@@ -50,7 +50,8 @@ public class KeyController extends Controller
                                     canReloadMap = false;
                                     refreshMap();
                                 }
-                                else if(pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
+                                else if (pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
+                                else if (pressedKey.getCharacter() == 'z' || pressedKey.getCharacter() == 'я') gamePlayControllers.forEach(Controller::resume);
                         }
                     }
             }

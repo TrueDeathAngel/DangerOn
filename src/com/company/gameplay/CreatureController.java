@@ -1,14 +1,10 @@
 package com.company.gameplay;
 
-import com.company.map.CellTypes;
 import com.company.objects.creatures.Creature;
 import com.company.objects.creatures.Status;
-import com.company.objects.items.Chest;
-import com.company.recources.Colors;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.company.Main.*;
 import static com.company.gameplay.GameLogic.*;
 
 public class CreatureController extends Controller

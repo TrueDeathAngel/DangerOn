@@ -1,6 +1,6 @@
 package com.company.gameplay;
 
-import com.company.objects.Container;
+import com.company.objects.items.Container;
 import com.company.objects.items.Chest;
 import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;

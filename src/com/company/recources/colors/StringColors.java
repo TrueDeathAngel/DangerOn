@@ -1,6 +1,6 @@
-package com.company.recources;
+package com.company.recources.colors;
 
-public class Colors
+public class StringColors
 {
     public static final String RESET = "\u001b[0m";
 

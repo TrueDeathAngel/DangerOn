@@ -8,7 +8,7 @@ import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
 import com.company.map.MapFactory;
-import com.company.recources.Colors;
+import com.company.recources.colors.StringColors;
 import com.company.recources.GameResources;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.TextGraphics;
@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static com.company.Main.*;
+import static com.company.gameplay.ControllerFactory.getSuitableController;
 import static com.company.gameplay.EffectsController.getLavaColor;
 
 public class GameLogic
@@ -85,12 +87,12 @@ public class GameLogic
         visibleCells = new boolean[MapFactory.getMapHeightInCells()][MapFactory.getMapWidthInCells()];
         hero.setPosition();
 
-        addEnemies();
+        addFloorEntities();
 
         screen.clear();
     }
 
-    public static void addEnemies() {
+    public static void addFloorEntities() {
         floorEntitiesControllers.forEach(Controller::cancel);
         floorEntitiesControllers.clear();
         floorEntities.clear();
@@ -102,11 +104,38 @@ public class GameLogic
         for(int i = 0; i < numberOfEnemies - 3 * numberOfEnemies / 4; i++)
             floorEntities.add(GameObjectFactory.spawnMob());
 
+        for (int i = 0; i < MapFactory.getNumberOfRooms(); i++)
+            floorEntities.add(GameObjectFactory.spawnChest());
+
         floorEntities.forEach((GameEntity::setPosition));
 
-        floorEntities.forEach((creature) -> floorEntitiesControllers.add(new CreatureController((Creature) creature)));
+        floorEntities.forEach((entity) -> floorEntitiesControllers.add(getSuitableController(entity)));
 
         floorEntitiesControllers.forEach(Controller::start);
+    }
+
+    private static void addEnemies() {
+
+    }
+
+    private static void drawFloorEntities() throws ConcurrentModificationException {
+        floorEntities.forEach((creature) -> {
+                    if(creature != null && creature.getPosition() != null
+                            && creature.getPosition().y >= Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y)
+                            && creature.getPosition().y < Math.max(hero.getPosition().y + heroViewZone.y / 2, heroViewZone.y)
+                            && creature.getPosition().x >= Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x)
+                            && creature.getPosition().x < Math.max(hero.getPosition().x + heroViewZone.x / 2, heroViewZone.x)
+                            && (noWarFog || visibleCells[creature.getPosition().x][creature.getPosition().y]))
+                        screen.setCharacter(
+                                Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2)
+                                        + Math.min(heroViewZone.y / 2, hero.getPosition().y)
+                                        + (creature.getPosition().y - hero.getPosition().y) + 1,
+                                Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2)
+                                        + Math.min(heroViewZone.x / 2, hero.getPosition().x)
+                                        + (creature.getPosition().x - hero.getPosition().x) + 2,
+                                creature.model
+                        );
+                });
     }
 
     public static void drawMap() {
@@ -143,38 +172,12 @@ public class GameLogic
 
         drawRectangle(new TerminalPosition(0, 0), new TerminalSize(heroViewZone.y + 2, heroViewZone.x + 2), "Floor #" + floorNumber);
 
-        try {
-            floorEntities.forEach((creature) -> {
-                if(creature != null && creature.getPosition() != null
-                        && creature.getPosition().y >= Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y)
-                        && creature.getPosition().y < Math.max(hero.getPosition().y + heroViewZone.y / 2, heroViewZone.y)
-                        && creature.getPosition().x >= Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x)
-                        && creature.getPosition().x < Math.max(hero.getPosition().x + heroViewZone.x / 2, heroViewZone.x)
-                        && (noWarFog || visibleCells[creature.getPosition().x][creature.getPosition().y]))
-                    screen.setCharacter(
-                            Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2)
-                                    + Math.min(heroViewZone.y / 2, hero.getPosition().y)
-                                    + (creature.getPosition().y - hero.getPosition().y) + 1,
-                            Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2)
-                                    + Math.min(heroViewZone.x / 2, hero.getPosition().x)
-                                    + (creature.getPosition().x - hero.getPosition().x) + 2,
-                            new TextCharacter(
-                                    creature.getModel(),
-                                    new TextColor.RGB(200, 0, 10),
-                                    TextColor.ANSI.DEFAULT)
-                    );
-            }
-            );
-        }
-        catch (ConcurrentModificationException ignored) {}
+        try { drawFloorEntities(); } catch (ConcurrentModificationException ignored) {}
 
         screen.setCharacter(
                 Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2) + Math.min(heroViewZone.y / 2, hero.getPosition().y) + 1,
                 Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2) + Math.min(heroViewZone.x / 2, hero.getPosition().x) + 2,
-                new TextCharacter(
-                '@',
-                new TextColor.RGB(0, 200, 100),
-                TextColor.ANSI.DEFAULT));
+                hero.model);
     }
 
     private static void drawRectangle(TerminalPosition topLeft, TerminalSize size) {
@@ -226,7 +229,7 @@ public class GameLogic
     public static void drawData(TerminalPosition topLeft) {
         TextGraphics textGraphics = screen.newTextGraphics();
         TerminalSize size = new TerminalSize(
-                stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2,
+                stringsToDraw.stream().filter(Objects::nonNull).mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2,
                 stringsToDraw.size() + 1);
         textGraphics.fillRectangle(topLeft, size, ' ');
 
@@ -247,10 +250,10 @@ public class GameLogic
         // Draw hero's stats
         stringsToDraw = new ArrayList<>(List.of(
                 hero.getName(),
-                "HP:" + Colors.RED
+                "HP:" + StringColors.RED
                         + " ❤".repeat((int)(10 * (float)hero.getHitPoints() / (float)hero.getMaxHitPoints()))
-                        + ((10 * hero.getHitPoints()) % hero.getMaxHitPoints() != 0 ? Colors.RED_DANCING + " ❤" : "")
-                        + Colors.RESET
+                        + ((10 * hero.getHitPoints()) % hero.getMaxHitPoints() != 0 ? StringColors.RED_DANCING + " ❤" : "")
+                        + StringColors.RESET
                         + " ❤".repeat((int)(10 - 10 * (float)hero.getHitPoints() / (float)hero.getMaxHitPoints()))
                         + " ("
                         + hero.getHitPoints()
@@ -307,7 +310,7 @@ public class GameLogic
         if (hero.inventory.isNotEmpty()) {
             stringsToDraw.addAll(hero.inventory.getItems().stream().map(Item::getName).collect(Collectors.toList()));
             if (inventoryWindowIsActive)
-                stringsToDraw.set(inventoryCursorPosition + 1, Colors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + Colors.RESET);
+                stringsToDraw.set(inventoryCursorPosition + 1, StringColors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + StringColors.RESET);
         }
         int inventoryMenuWidth = stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2;
         drawData(new TerminalPosition(0, 0));
@@ -315,7 +318,7 @@ public class GameLogic
             stringsToDraw.add(openedChest.getName());
             if (openedChest.inventory.isNotEmpty()) {
                 stringsToDraw.addAll(openedChest.inventory.getItems().stream().map(Item::getName).collect(Collectors.toList()));
-                if (!inventoryWindowIsActive) stringsToDraw.set(inventoryCursorPosition + 1, Colors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + Colors.RESET);
+                if (!inventoryWindowIsActive) stringsToDraw.set(inventoryCursorPosition + 1, StringColors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + StringColors.RESET);
             }
             drawData(new TerminalPosition(inventoryMenuWidth, 0));
         }
@@ -356,7 +359,7 @@ public class GameLogic
                 if(gameOver) break;
 
                 if(!hero.isAlive()) {
-                    addToLog(Colors.GREEN + hero.getName() + Colors.RESET + " was slain");
+                    addToLog(StringColors.GREEN + hero.getName() + StringColors.RESET + " was slain");
                     floorNumber = 0;
                     refreshMap();
                     hero.instantRecovery();

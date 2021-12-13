@@ -1,7 +1,6 @@
-package com.company.objects;
+package com.company.objects.items;
 
-import com.company.objects.items.Item;
-import com.company.recources.Colors;
+import com.company.recources.colors.StringColors;
 
 import java.util.ArrayList;
 
@@ -9,7 +8,7 @@ import static com.company.gameplay.GameLogic.addToLog;
 
 public class Container {
     private final int maxSize;
-    private String name;
+    private final String name;
     private final ArrayList<Item> items = new ArrayList<>();
 
     public Container(String name, int maxSize) {
@@ -17,17 +16,14 @@ public class Container {
         this.maxSize = maxSize;
     }
 
-    public Container(String name) {
-        this(name, 10);
-    }
-
     public void clear() {
-        addToLog(name + " cleared. Number of deleted items: " + Colors.RED + getSize() + Colors.RESET + "!");
+        addToLog(name + " cleared. Number of deleted items: " + StringColors.RED + getSize() + StringColors.RESET + "!");
         items.clear();
     }
 
     public void addItem(Item item) {
         if (items.size() < maxSize) items.add(item);
+        else addToLog(name + " is full!");
     }
 
     public void addAllItems(ArrayList<Item> items) {

@@ -8,6 +8,8 @@ import com.company.objects.items.Weapon;
 import com.company.magic.Spell;
 import com.company.map.CellTypes;
 import com.company.map.MapFactory;
+import com.googlecode.lanterna.TextCharacter;
+import com.googlecode.lanterna.TextColor;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -27,7 +29,10 @@ public class Hero extends Mob
 
     public Hero(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name, maxHitPoints, attackPower, defencePoints);
-        model = '@';
+        model = new TextCharacter(
+                '@',
+                new TextColor.RGB(0, 200, 100),
+                TextColor.ANSI.DEFAULT);
         setSlowness(3);
         setScanRadius(4);
         underCell = CellTypes.SAFE_AREA;

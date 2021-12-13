@@ -4,7 +4,9 @@ import com.company.gameplay.ChestController;
 import com.company.objects.GameEntity;
 import com.company.objects.items.Chest;
 import com.company.map.CellTypes;
-import com.company.recources.Colors;
+import com.company.recources.colors.StringColors;
+import com.googlecode.lanterna.TextCharacter;
+import com.googlecode.lanterna.TextColor;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class Creature extends GameEntity
     public Creature(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name);
         slowness = ThreadLocalRandom.current().nextInt(5) + 2;
-        model = Character.toLowerCase(name.charAt(0));
+        model = new TextCharacter(Character.toLowerCase(name.charAt(0)), TextColor.ANSI.RED, TextColor.ANSI.DEFAULT);
         this.hitPoints = maxHitPoints;
         this.maxHitPoints = maxHitPoints;
         this.attackPower = attackPower;
@@ -141,13 +143,15 @@ public class Creature extends GameEntity
     public void die() {
         floorEntities.remove(this);
         map[position.x][position.y] = CellTypes.CHEST;
-        Chest chest = new Chest(getName() + " items' chest", position, underCell);
+        Chest chest = new Chest(getName() + " items' chest", 10);
+        chest.setPosition(position);
+        chest.underCell = underCell;
         chest.inventory.addAllItems(getLoot());
         floorEntities.add(chest);
         ChestController chestController = new ChestController(chest);
         floorEntitiesControllers.add(chestController);
         chestController.start();
-        addToLog(Colors.RED + getName() + Colors.RESET + " was slain. " + Colors.GOLDEN + "+ " + getCost() + " XP" + Colors.RESET);
+        addToLog(StringColors.RED + getName() + StringColors.RESET + " was slain. " + StringColors.GOLDEN + "+ " + getCost() + " XP" + StringColors.RESET);
         hero.addExperiencePoints(getCost());
     }
 }

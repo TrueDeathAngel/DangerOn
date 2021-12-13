@@ -1,8 +1,6 @@
 package com.company.gameplay;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class Controller implements Runnable {
 

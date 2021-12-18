@@ -2,9 +2,9 @@ package com.company.objects.items;
 
 import com.company.objects.GameObject;
 
-public class Item extends GameObject
+public abstract class Item extends GameObject
 {
-    private int price = 1;
+    private final int price;
 
     public Item(String name, int price)
     {

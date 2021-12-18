@@ -1,5 +1,6 @@
-package com.company.objects.items;
+package com.company.objects.items.chests;
 
+import com.company.objects.items.Item;
 import com.company.recources.colors.StringColors;
 
 import java.util.ArrayList;
@@ -21,9 +22,13 @@ public class Container {
         items.clear();
     }
 
-    public void addItem(Item item) {
-        if (items.size() < maxSize) items.add(item);
+    public void addItem(int index, Item item) {
+        if (items.size() < maxSize) items.add(index, item);
         else addToLog(name + " is full!");
+    }
+
+    public void addItem(Item item) {
+        addItem(0, item);
     }
 
     public void addAllItems(ArrayList<Item> items) {
@@ -36,7 +41,7 @@ public class Container {
 
     public Item getByIndex(int index) { return items.get(index); }
 
-    public void removeByIndex(int index) {
+    public void remove(int index) {
         items.remove(index);
     }
 

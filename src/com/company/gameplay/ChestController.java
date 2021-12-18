@@ -1,10 +1,8 @@
 package com.company.gameplay;
 
-import com.company.objects.items.Chest;
+import com.company.objects.items.chests.Chest;
 
-import static com.company.Main.map;
-import static com.company.gameplay.GameLogic.floorEntities;
-import static com.company.gameplay.GameLogic.hero;
+import java.util.Objects;
 
 public class ChestController extends Controller {
     private final Chest chest;
@@ -19,5 +17,7 @@ public class ChestController extends Controller {
             chest.die();
             cancel();
         }
+        if(chest.inventory.getItems().stream().anyMatch(Objects::isNull)) {System.out.println(chest.inventory.getName());
+        System.out.println(" has null item!");}
     }
 }

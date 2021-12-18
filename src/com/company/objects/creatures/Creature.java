@@ -2,7 +2,7 @@ package com.company.objects.creatures;
 
 import com.company.gameplay.ChestController;
 import com.company.objects.GameEntity;
-import com.company.objects.items.Chest;
+import com.company.objects.items.chests.Chest;
 import com.company.map.CellTypes;
 import com.company.recources.colors.StringColors;
 import com.googlecode.lanterna.TextCharacter;
@@ -51,7 +51,7 @@ public class Creature extends GameEntity
 
     public int getAttackPower() { return attackPower; }
 
-    public int getDamage() { return attackPower; }
+    public int getDamage() { return ThreadLocalRandom.current().nextInt(attackPower) + 1; }
 
     public int getDefencePoints() { return defencePoints; }
 
@@ -61,9 +61,7 @@ public class Creature extends GameEntity
 
     @Override
     public void receiveDamage(int damage) {
-        int defence = getDefencePoints();
-        if(damage > defence) hitPoints -= damage - defence;
-        else hitPoints--;
+        hitPoints -= Math.max(damage - getDefencePoints(), 1);
     }
 
     public void instantRecovery() { hitPoints = maxHitPoints; }
@@ -143,7 +141,13 @@ public class Creature extends GameEntity
     public void die() {
         floorEntities.remove(this);
         map[position.x][position.y] = CellTypes.CHEST;
-        Chest chest = new Chest(getName() + " items' chest", 10);
+        Chest chest = new Chest(
+                getName() + " items' chest",
+                10,
+                new TextCharacter(
+                        '†',
+                        TextColor.ANSI.WHITE,
+                        TextColor.ANSI.DEFAULT));
         chest.setPosition(position);
         chest.underCell = underCell;
         chest.inventory.addAllItems(getLoot());
@@ -154,4 +158,6 @@ public class Creature extends GameEntity
         addToLog(StringColors.RED + getName() + StringColors.RESET + " was slain. " + StringColors.GOLDEN + "+ " + getCost() + " XP" + StringColors.RESET);
         hero.addExperiencePoints(getCost());
     }
+
+    public void heal(int hitPoints) { this.hitPoints = Math.min((this.hitPoints + hitPoints), maxHitPoints); }
 }

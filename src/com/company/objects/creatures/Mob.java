@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static com.company.gameplay.GameLogic.*;
 
 public class Mob extends Creature {
-    public final HashMap<Equipment.EquipmentType, Equipment> equipmentItems = new HashMap();
+    public final HashMap<Equipment.EquipmentType, Equipment> equipmentItems = new HashMap<>();
     public Weapon weapon;
 
     public Mob(String name, int maxHitPoints, int attackPower, int defencePoints) {
@@ -38,13 +38,6 @@ public class Mob extends Creature {
         return damage;
     }
 
-    /*@Override
-    public void receiveDamage(short damage)
-    {
-        if(damage > defencePoints) hitPoints -= damage - defencePoints;
-        else hitPoints--;
-    }*/
-
     @Override
     public ArrayList<Item> getLoot() {
         ArrayList<Item> items = super.getLoot();
@@ -54,25 +47,18 @@ public class Mob extends Creature {
     }
 
     @Override
-    public int getDefencePoints()
-    {
+    public int getDefencePoints() {
         return super.getDefencePoints() + equipmentItems.values().stream().mapToInt(Equipment::getDefencePoints).sum();
     }
 
     public int getWeaponAttackPower() { return weapon != null ? weapon.getAttackPower() : 0; }
 
     public void setWeapon(Weapon weapon) {
-        if (this.weapon != null) inventory.addItem(this.weapon);
         this.weapon = weapon;
     }
 
-    public HashMap<Equipment.EquipmentType, Equipment> getEquipmentItems()
-    {
-        return equipmentItems;
-    }
-
     public void equip(Item item) {
-        inventory.removeByIndex(inventoryCursorPosition);
+        inventory.remove(inventoryCursorPosition);
         Equipment.EquipmentType type = ((Equipment) item).getEquipmentType();
         if (equipmentItems.containsKey(type)) {
             inventory.addItem(hero.equipmentItems.get(type));

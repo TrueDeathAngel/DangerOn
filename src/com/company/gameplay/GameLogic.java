@@ -3,11 +3,12 @@ package com.company.gameplay;
 import com.company.objects.GameEntity;
 import com.company.objects.GameObjectFactory;
 import com.company.objects.creatures.*;
-import com.company.objects.items.Chest;
+import com.company.objects.items.chests.Chest;
 import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
 import com.company.map.MapFactory;
+import com.company.objects.items.potions.Potion;
 import com.company.recources.colors.StringColors;
 import com.company.recources.GameResources;
 import com.googlecode.lanterna.*;
@@ -75,6 +76,13 @@ public class GameLogic
 
         gamePlayControllers.add(new HeroController(hero));
 
+        gamePlayControllers.add(new Controller(1000) {
+            @Override
+            public void step() {
+                hero.heal(hero.regenerationPower);
+            }
+        });
+
         keyController.start();
 
         gamePlayControllers.forEach(Controller::start);
@@ -104,7 +112,7 @@ public class GameLogic
         for(int i = 0; i < numberOfEnemies - 3 * numberOfEnemies / 4; i++)
             floorEntities.add(GameObjectFactory.spawnMob());
 
-        for (int i = 0; i < MapFactory.getNumberOfRooms(); i++)
+        for (int i = 0; i < MapFactory.getNumberOfRooms() / 4; i++)
             floorEntities.add(GameObjectFactory.spawnChest());
 
         floorEntities.forEach((GameEntity::setPosition));
@@ -112,10 +120,6 @@ public class GameLogic
         floorEntities.forEach((entity) -> floorEntitiesControllers.add(getSuitableController(entity)));
 
         floorEntitiesControllers.forEach(Controller::start);
-    }
-
-    private static void addEnemies() {
-
     }
 
     private static void drawFloorEntities() throws ConcurrentModificationException {
@@ -289,6 +293,7 @@ public class GameLogic
                 if (hero.inventory.isNotEmpty()) item = hero.inventory.getByIndex(inventoryCursorPosition);}
             else if (openedChest != null && openedChest.inventory.isNotEmpty()) item = openedChest.inventory.getByIndex(inventoryCursorPosition);
             if (item instanceof Equipment || item instanceof Weapon) stringsToDraw.add("E - equip");
+            else if (item instanceof Potion) stringsToDraw.add("E - use");
         }
 
         drawData(new TerminalPosition(heroViewZone.y + mapToMenuDistanceHorizontal + 2, 11));
@@ -308,7 +313,7 @@ public class GameLogic
     private static void drawInventoryMenu() throws ConcurrentModificationException {
         stringsToDraw.add("Inventory");
         if (hero.inventory.isNotEmpty()) {
-            stringsToDraw.addAll(hero.inventory.getItems().stream().map(Item::getName).collect(Collectors.toList()));
+            stringsToDraw.addAll(hero.inventory.getItems().stream().filter(Objects::nonNull).map(Item::getName).collect(Collectors.toList()));
             if (inventoryWindowIsActive)
                 stringsToDraw.set(inventoryCursorPosition + 1, StringColors.GOLDEN + ">" + stringsToDraw.get(inventoryCursorPosition + 1) + StringColors.RESET);
         }
@@ -324,7 +329,7 @@ public class GameLogic
         }
     }
 
-    public static void gameLoop() {
+    public static void startGameLoop() {
 
         try {
             defaultTerminalFactory.setTerminalEmulatorTitle("DangeredOn " + GameResources.version);
@@ -348,6 +353,8 @@ public class GameLogic
             hero.setWeapon(new Weapon("Cool Stick", 4, 1, 1));
 
             GameLogic.startGame();
+
+            hero.receiveDamage(98);
 
             while (true) {
                 TerminalSize newSize = screen.doResizeIfNecessary();

@@ -6,6 +6,7 @@ import com.company.objects.creatures.Status;
 import com.googlecode.lanterna.input.KeyType;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.gameplay.GameLogic.addToLog;
@@ -71,6 +72,7 @@ public class HeroController extends Controller
                                 targets = hero.scanAreaForTargets();
                                 if(targets.size() > 0) {
                                     targets.stream()
+                                            .filter(Objects::nonNull)
                                             .filter(GameEntity::isCloseToHero)
                                             .findAny()
                                             .ifPresent(floorEntity -> floorEntity.receiveDamage(hero.getDamage()));

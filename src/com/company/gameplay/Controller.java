@@ -3,13 +3,18 @@ package com.company.gameplay;
 import java.util.concurrent.TimeUnit;
 
 public abstract class Controller implements Runnable {
+    private final int updateFrequency;  // in milliseconds
 
     private volatile boolean paused = false;
 
     private volatile boolean cancelled = false;
 
-    public boolean isPaused() {
-        return paused;
+    public Controller(int updateFrequency) {
+        this.updateFrequency = updateFrequency;
+    }
+
+    public Controller() {
+        this(10);
     }
 
     @Override
@@ -21,7 +26,7 @@ public abstract class Controller implements Runnable {
                     step();
 
                 try {
-                    TimeUnit.MILLISECONDS.sleep(10);
+                    TimeUnit.MILLISECONDS.sleep(updateFrequency);
                 } catch (InterruptedException e) { e.printStackTrace(); }
             }
         } catch (Exception e) {

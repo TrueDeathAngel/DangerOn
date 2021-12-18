@@ -1,10 +1,11 @@
 package com.company.gameplay;
 
-import com.company.objects.items.Container;
-import com.company.objects.items.Chest;
+import com.company.objects.items.chests.Container;
+import com.company.objects.items.chests.Chest;
 import com.company.objects.items.Equipment;
 import com.company.objects.items.Item;
 import com.company.objects.items.Weapon;
+import com.company.objects.items.potions.Potion;
 
 import static com.company.Main.gameOver;
 import static com.company.gameplay.GameLogic.*;
@@ -49,28 +50,34 @@ public class InventoryMenu extends Controller {
                     if (chest != null && (pressedKey.getCharacter() == 's' || pressedKey.getCharacter() == 'ы')) {
                         if (inventoryWindowIsActive && hero.inventory.isNotEmpty()) {
                             Item item = hero.inventory.getByIndex(inventoryCursorPosition);
-                            hero.inventory.removeByIndex(inventoryCursorPosition);
+                            hero.inventory.remove(inventoryCursorPosition);
                             chest.inventory.addItem(item);
                         } else if (chest.inventory.isNotEmpty()) {
                             Item item = chest.inventory.getByIndex(inventoryCursorPosition);
-                            chest.inventory.removeByIndex(inventoryCursorPosition);
+                            chest.inventory.remove(inventoryCursorPosition);
                             hero.inventory.addItem(item);
                         }
                         inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
-                    }
-                    else if (pressedKey.getCharacter() == 'e' || pressedKey.getCharacter() == 'у') {
+                    } else if (pressedKey.getCharacter() == 'e' || pressedKey.getCharacter() == 'у') {
                         Container container;
-                        if (inventoryWindowIsActive) {
+                        if (inventoryWindowIsActive)
                             container = hero.inventory;
-                            }
                         else container = chest.inventory;
+
                         if (container.isNotEmpty()) {
                             Item item = container.getByIndex(inventoryCursorPosition);
-                            if (item instanceof Equipment) {
-                                hero.equip(item);
-                            } else if (item instanceof Weapon) {
-                                hero.setWeapon((Weapon) item);
-                                container.removeByIndex(inventoryCursorPosition);
+                            if (item instanceof Equipment equipment) {
+                                hero.equip(equipment);
+                            } else if (item instanceof Weapon weapon) {
+                                Weapon old_weapon = hero.weapon;
+                                hero.setWeapon(weapon);
+                                container.remove(inventoryCursorPosition);
+                                if (old_weapon != null) container.addItem(inventoryCursorPosition, old_weapon);
+                                else inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
+                            } else if (item instanceof Potion potion) {
+                                potion.use();
+                                container.remove(inventoryCursorPosition);
+                                inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
                             }
                         }
                     } else if (pressedKey.getCharacter() == 'c' || pressedKey.getCharacter() == 'с') {

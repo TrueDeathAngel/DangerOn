@@ -1,7 +1,7 @@
 package com.company.gameplay;
 
 import com.company.map.CellTypes;
-import com.company.objects.items.Chest;
+import com.company.objects.items.chests.Chest;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 

@@ -2,7 +2,8 @@ package com.company.objects;
 
 import com.company.gameplay.GameLogic;
 import com.company.map.CellTypes;
-import com.company.objects.items.Container;
+import com.company.map.MapFactory;
+import com.company.objects.items.chests.Container;
 import com.company.objects.items.Item;
 import com.googlecode.lanterna.TextCharacter;
 import com.googlecode.lanterna.TextColor;
@@ -60,7 +61,9 @@ public abstract class GameEntity extends GameObject {
             int x = random.nextInt(map.length), y = random.nextInt(map[x].length);
             if(getAllowedCells().contains(map[x][y])
                     && (getAllowedCells().contains(map[x + 1][y]) && getAllowedCells().contains(map[x - 1][y])
-                        || (getAllowedCells().contains(map[x][y + 1]) && getAllowedCells().contains(map[x][y - 1])))) {
+                        || (getAllowedCells().contains(map[x][y + 1]) && getAllowedCells().contains(map[x][y - 1])))
+                    && x > MapFactory.getHeroStartPosition().x
+                    && y > MapFactory.getHeroStartPosition().y) {
                 underCell = map[x][y];
                 map[x][y] = getEntityType();
                 return new Point(x ,y);

@@ -25,7 +25,8 @@ public class Hero extends Mob
     private int experiencePoints = 0;
     private int experiencePointsForNextLevel = 100;
     private int karma = 0;
-    private ArrayList<Spell<?>> spells = new ArrayList<>(3);
+    public int regenerationPower = 1;
+    private final ArrayList<Spell<?>> spells = new ArrayList<>(3);
 
     public Hero(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name, maxHitPoints, attackPower, defencePoints);
@@ -54,6 +55,8 @@ public class Hero extends Mob
     public int getExperiencePointsForNextLevel() { return experiencePointsForNextLevel; }
 
     public int getKarma() { return karma; }
+
+    public boolean isFullHitPoints() { return maxHitPoints == hitPoints; }
 
     public void addSpell(Spell<?> spell) { if(spells.size() < 3) spells.add(spell); }
 

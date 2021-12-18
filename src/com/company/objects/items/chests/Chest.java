@@ -1,4 +1,4 @@
-package com.company.objects.items;
+package com.company.objects.items.chests;
 
 import com.company.gameplay.InventoryMenu;
 import com.company.map.CellTypes;
@@ -13,13 +13,9 @@ import static com.company.gameplay.GameLogic.*;
 
 public class Chest extends GameEntity {
 
-    public Chest(String name, int inventorySize) {
+    public Chest(String name, int inventorySize, TextCharacter model) {
         super(name, inventorySize);
-        //† ☐
-        this.model = new TextCharacter(
-                '†',
-                TextColor.ANSI.WHITE,
-                TextColor.ANSI.DEFAULT);
+        this.model = model;
     }
 
     public void open() {
@@ -30,8 +26,8 @@ public class Chest extends GameEntity {
 
     @Override
     public void receiveDamage(int damage) {
-        if(!inventory.isNotEmpty()) super.receiveDamage(damage);
-        else addToLog("Cannot break a non-empty chest!");
+        if(inventory.isNotEmpty()) addToLog("Cannot break a non-empty chest!");
+        else super.receiveDamage(damage);
     }
 
     @Override

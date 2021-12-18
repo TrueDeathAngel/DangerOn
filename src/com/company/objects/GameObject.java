@@ -2,7 +2,7 @@ package com.company.objects;
 
 public abstract class GameObject
 {
-    private String name;
+    private final String name;
 
     public String getName() { return name; }
 

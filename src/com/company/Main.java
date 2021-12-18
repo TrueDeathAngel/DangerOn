@@ -1,12 +1,10 @@
 package com.company;
 
 import com.company.map.CellTypes;
-import com.company.objects.creatures.Mob;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 
-import static com.company.gameplay.ControllerFactory.getSuitableController;
 import static com.company.gameplay.GameLogic.*;
 
 public class Main
@@ -21,7 +19,7 @@ public class Main
     public static CellTypes[][] map;
 
     public static void main(String[] args) {
-        gameLoop();
+        startGameLoop();
 
         /*Random = new Random();
 

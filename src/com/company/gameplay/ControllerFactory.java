@@ -2,7 +2,6 @@ package com.company.gameplay;
 
 import com.company.objects.GameEntity;
 import com.company.objects.creatures.Creature;
-import com.company.objects.creatures.Mob;
 import com.company.objects.items.chests.Chest;
 
 public class ControllerFactory {

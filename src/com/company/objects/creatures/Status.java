@@ -4,5 +4,6 @@ public enum Status
 {
     IDLE,
     CHASE,
-    FIGHT
+    FIGHT,
+    CONTROLLED
 }

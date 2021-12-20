@@ -1,7 +1,6 @@
 package com.company.map;
 
-public enum CellTypes
-{
+public enum CellTypes {
         EMPTY,
         LAVA,
         VERTICAL_WALL,
@@ -14,5 +13,6 @@ public enum CellTypes
         CREATURE,
         SAFE_AREA,
         DOOR,
-        CHEST
+        CHEST,
+        EXIT
 }

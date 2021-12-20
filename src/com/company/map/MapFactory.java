@@ -2,7 +2,12 @@ package com.company.map;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static com.company.Main.map;
+
+//փ
 
 public class MapFactory
 {
@@ -16,8 +21,6 @@ public class MapFactory
     private static final Point heroBaseBottomRight = new Point(3 * roomMaxHeight / 4 - 1, 3 * roomMaxWidth / 4 - 1);
     private static final HashSet<Integer> safeRoomNumbers = new HashSet<>();
     public static int freeSpaceCounter;
-
-    //փ
 
     public static int getNumberOfRooms() { return mapHeight * mapWidth; }
 
@@ -62,6 +65,16 @@ public class MapFactory
             int dj = roomMaxWidth * (roomNumber % mapWidth);
             for (int i = 0; i < roomMaxHeight; i++)
                 if (roomMaxWidth >= 0) System.arraycopy(room[i], 0, map[i + di], dj, roomMaxWidth);
+        }
+
+        Random random = new Random();
+        while (true)
+        {
+            int x = random.nextInt(map.length / 2) + map.length / 2, y = random.nextInt(map[x].length / 2) + map[x].length / 2;
+            if(List.of(CellTypes.EMPTY, CellTypes.SAFE_AREA).contains(map[x][y])) {
+                map[x][y] = CellTypes.EXIT;
+                break;
+            }
         }
 
         return map;
@@ -174,8 +187,7 @@ public class MapFactory
         boolean isVisited = false;
     }
 
-    private static Optional<Integer> getNextRoomIndex(int currentRoomIndex)
-    {
+    private static Optional<Integer> getNextRoomIndex(int currentRoomIndex) {
         ArrayList<Integer> indexes = new ArrayList<>();
         if(currentRoomIndex / mapWidth > 0 && !roomMap[(currentRoomIndex - mapWidth) / mapWidth][(currentRoomIndex - mapWidth) % mapWidth].isVisited) indexes.add(currentRoomIndex - mapWidth);
         if(currentRoomIndex / mapWidth < mapHeight - 1 && !roomMap[(currentRoomIndex + mapWidth) / mapWidth][(currentRoomIndex + mapWidth) % mapWidth].isVisited) indexes.add(currentRoomIndex + mapWidth);
@@ -186,8 +198,7 @@ public class MapFactory
         return Optional.of(indexes.get(ThreadLocalRandom.current().nextInt(indexes.size())));
     }
 
-    private static void removeWalls(int currentRoomIndex, int nextRoomIndex)
-    {
+    private static void removeWalls(int currentRoomIndex, int nextRoomIndex) {
 
         if (nextRoomIndex - currentRoomIndex == -mapWidth) {
             roomMap[currentRoomIndex / mapWidth][currentRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.UP);
@@ -196,7 +207,7 @@ public class MapFactory
         if (nextRoomIndex - currentRoomIndex == 1) {
             roomMap[currentRoomIndex / mapWidth][currentRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.RIGHT);
             roomMap[nextRoomIndex / mapWidth][nextRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.LEFT);
-        }           // RIGHT
+        }   // RIGHT
         if (nextRoomIndex - currentRoomIndex == mapWidth) {
             roomMap[currentRoomIndex / mapWidth][currentRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.DOWN);
             roomMap[nextRoomIndex / mapWidth][nextRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.UP);
@@ -204,15 +215,13 @@ public class MapFactory
         if (nextRoomIndex - currentRoomIndex == -1) {
             roomMap[currentRoomIndex / mapWidth][currentRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.LEFT);
             roomMap[nextRoomIndex / mapWidth][nextRoomIndex % mapWidth].corridorDirections.add(CorridorDirections.RIGHT);
-        }          // LEFT
+        }   // LEFT
     }
 
-    private static void generateMapTemplate()
-    {
+    private static void generateMapTemplate() {
         roomMap = new Room[mapHeight][mapWidth];
 
-        for(int i = 0; i < mapHeight; i++)
-        {
+        for(int i = 0; i < mapHeight; i++) {
             roomMap[i] = new Room[mapWidth];
             for (int j = 0; j < mapWidth; j++)
                 roomMap[i][j] = new Room();
@@ -221,18 +230,15 @@ public class MapFactory
         ArrayList<Integer> roomIndexes = new ArrayList<>();
         int currentRoomIndex = 0;
         Optional<Integer> nextRoomIndex;
-        while (Arrays.stream(roomMap).anyMatch((rooms) -> Arrays.stream(rooms).filter(Objects::nonNull).anyMatch((room) -> !room.isVisited)))
-        {
+        while (Arrays.stream(roomMap).anyMatch((rooms) -> Arrays.stream(rooms).filter(Objects::nonNull).anyMatch((room) -> !room.isVisited))) {
             nextRoomIndex = getNextRoomIndex(currentRoomIndex);
-            if(nextRoomIndex.isPresent())
-            {
+            if(nextRoomIndex.isPresent()) {
                 roomMap[nextRoomIndex.get() / mapWidth][nextRoomIndex.get() % mapWidth].isVisited = true;
                 roomIndexes.add(currentRoomIndex);
                 removeWalls(currentRoomIndex, nextRoomIndex.get());
                 currentRoomIndex = nextRoomIndex.get();
             }
-            else if(!roomIndexes.isEmpty())
-            {
+            else if(!roomIndexes.isEmpty()) {
                 currentRoomIndex = roomIndexes.get(roomIndexes.size() - 1);
                 roomIndexes.remove(roomIndexes.size() - 1);
             }

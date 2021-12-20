@@ -31,7 +31,7 @@ public class KeyController extends Controller
                 pressedKey = keyStroke;
 
                 if (!isOpenedInventory)
-                    switch (GameLogic.pressedKey.getKeyType()) {
+                    switch (pressedKey.getKeyType()) {
                         case Escape -> gameOver = true;
                         case Character -> {
                             addPressedKey(pressedKey.getCharacter());
@@ -52,6 +52,7 @@ public class KeyController extends Controller
                                 }
                                 else if (pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
                                 else if (pressedKey.getCharacter() == 'z' || pressedKey.getCharacter() == 'я') gamePlayControllers.forEach(Controller::resume);
+                                else if (pressedKey.getCharacter() == 'n' || pressedKey.getCharacter() == 'т') gamePlayControllers.forEach(System.out::println);
                         }
                     }
             }

@@ -1,17 +1,16 @@
 package com.company.gameplay;
 
+import com.company.map.CellTypes;
 import com.company.objects.GameEntity;
 import com.company.objects.creatures.Hero;
 import com.company.objects.creatures.Status;
 import com.googlecode.lanterna.input.KeyType;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.company.gameplay.GameLogic.addToLog;
-import static com.company.gameplay.GameLogic.pressedKey;
 import static com.company.Main.*;
+import static com.company.gameplay.GameLogic.*;
 
 public class HeroController extends Controller
 {
@@ -25,6 +24,8 @@ public class HeroController extends Controller
     @Override
     public void step() {
         if(gameOver) cancel();
+
+        if (hero.underCell == CellTypes.EXIT) refreshMap();
 
         if(hero.getExperiencePoints() >= hero.getExperiencePointsForNextLevel()) {
             hero.newLevel();
@@ -56,27 +57,20 @@ public class HeroController extends Controller
             }
         }
         else {
-            if(pressedKey != null)
-            {
+            if(pressedKey != null) {
                 if(pressedKey.getKeyType() == KeyType.Escape || pressedKey.getKeyType() == KeyType.EOF)
                     cancel();
                 else
-                    switch (pressedKey.getKeyType())
-                    {
+                    switch (pressedKey.getKeyType()) {
                         case ArrowUp -> hero.move(-1, 0);
                         case ArrowRight -> hero.move(0, 1);
                         case ArrowDown -> hero.move(1, 0);
                         case ArrowLeft -> hero.move(0, -1);
                         case Character -> {
-                            if(pressedKey.getCharacter() == 'd' || pressedKey.getCharacter() == 'в') {
-                                targets = hero.scanAreaForTargets();
-                                if(targets.size() > 0) {
-                                    targets.stream()
-                                            .filter(Objects::nonNull)
-                                            .filter(GameEntity::isCloseToHero)
-                                            .findAny()
-                                            .ifPresent(floorEntity -> floorEntity.receiveDamage(hero.getDamage()));
-                                }
+                            if(pressedKey.getCharacter() == 'd' || pressedKey.getCharacter() == 'в')
+                                hero.attackRandomTarget();
+                            else if(pressedKey.getCharacter() == 'n' || pressedKey.getCharacter() == 'т') {
+                                System.out.println("Alive");
                             }
                         }
                     }

@@ -14,6 +14,7 @@ import com.googlecode.lanterna.TextColor;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.company.Main.map;
@@ -27,6 +28,7 @@ public class Hero extends Mob
     private int karma = 0;
     public int regenerationPower = 1;
     private final ArrayList<Spell<?>> spells = new ArrayList<>(3);
+    public ArrayList<GameEntity> targets;
 
     public Hero(String name, int maxHitPoints, int attackPower, int defencePoints) {
         super(name, maxHitPoints, attackPower, defencePoints);
@@ -84,7 +86,7 @@ public class Hero extends Mob
 
     @Override
     public ArrayList<CellTypes> getAllowedCells() {
-        return new ArrayList<>(List.of(CellTypes.EMPTY, CellTypes.DOOR, CellTypes.SAFE_AREA));
+        return new ArrayList<>(List.of(CellTypes.EMPTY, CellTypes.DOOR, CellTypes.SAFE_AREA, CellTypes.EXIT));
     }
 
     @Override
@@ -112,5 +114,16 @@ public class Hero extends Mob
         openedChest = null;
         gamePlayControllers.forEach(Controller::resume);
         floorEntitiesControllers.forEach(Controller::resume);
+    }
+
+    public void attackRandomTarget() {
+        targets = hero.scanAreaForTargets();
+        if(targets.size() > 0) {
+            targets.stream()
+                    .filter(Objects::nonNull)
+                    .filter(GameEntity::isCloseToHero)
+                    .findAny()
+                    .ifPresent(floorEntity -> floorEntity.receiveDamage(hero.getDamage()));
+        }
     }
 }

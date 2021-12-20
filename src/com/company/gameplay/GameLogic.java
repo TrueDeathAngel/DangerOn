@@ -171,6 +171,7 @@ public class GameLogic
                             case BOTTOM_RIGHT_CORNER_WALL -> new TextCharacter('┛');
                             case BOTTOM_LEFT_CORNER_WALL -> new TextCharacter('┗');
                             case DOOR -> new TextCharacter('&');
+                            case EXIT -> new TextCharacter('E', TextColor.ANSI.GREEN, TextColor.ANSI.DEFAULT);
                         });
         } catch (ArrayIndexOutOfBoundsException ignored) {}
 

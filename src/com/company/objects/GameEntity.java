@@ -56,8 +56,7 @@ public abstract class GameEntity extends GameObject {
 
     public Point getFreePoint() {
         Random random = new Random();
-        while (true)
-        {
+        while (true) {
             int x = random.nextInt(map.length), y = random.nextInt(map[x].length);
             if(getAllowedCells().contains(map[x][y])
                     && (getAllowedCells().contains(map[x + 1][y]) && getAllowedCells().contains(map[x - 1][y])

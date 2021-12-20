@@ -7,8 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.gameplay.GameLogic.*;
 
-public class CreatureController extends Controller
-{
+public class CreatureController extends Controller {
     public Creature creature;
     private int actionCounter;
 

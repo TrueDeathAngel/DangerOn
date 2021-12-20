@@ -1,7 +1,6 @@
 package com.company.magic;
 
-public class Spell<T extends MagicElement>
-{
+public class Spell<T extends MagicElement> {
     private T spell;
 
     public Spell(T spell) { this.spell = spell; }

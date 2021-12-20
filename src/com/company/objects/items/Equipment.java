@@ -1,12 +1,10 @@
 package com.company.objects.items;
 
-public class Equipment extends Item
-{
-    private int defencePoints;
+public class Equipment extends Item {
+    private final int defencePoints;
     private final EquipmentType equipmentType;
 
-    public Equipment(String name, int price, int defencePoints, EquipmentType equipmentType)
-    {
+    public Equipment(String name, int price, int defencePoints, EquipmentType equipmentType) {
         super(name, price);
         this.equipmentType = equipmentType;
         this.defencePoints = defencePoints;
@@ -16,8 +14,7 @@ public class Equipment extends Item
 
     public EquipmentType getEquipmentType() { return equipmentType; }
 
-    public enum EquipmentType
-    {
+    public enum EquipmentType {
         HELMET,
         BREASTPLATE,
         FOREARMS,

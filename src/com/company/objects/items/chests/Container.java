@@ -47,6 +47,8 @@ public class Container {
 
     public int getSize() { return items.size(); }
 
+    public boolean isNotFull() { return items.size() < maxSize; }
+
     public String getName() { return name; }
 
     public boolean isNotEmpty() { return !items.isEmpty(); }

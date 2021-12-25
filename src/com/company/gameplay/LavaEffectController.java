@@ -2,8 +2,7 @@ package com.company.gameplay;
 
 import com.googlecode.lanterna.TextColor;
 
-public class EffectsController extends Controller
-{
+public class LavaEffectController extends Controller {
     private static final int reloadingCoolDownTime = 10; // in centiseconds
     private static final int numberOfLavaColors = 125;
     private static byte deltaLavaColor = 1;

@@ -46,6 +46,14 @@ public abstract class Controller implements Runnable {
         cancelled = true;
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
     public void start() {
         new Thread(this).start();
     }

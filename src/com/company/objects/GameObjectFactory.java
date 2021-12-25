@@ -70,7 +70,6 @@ public class GameObjectFactory
         else {
             power *= 2;
             int duration = ThreadLocalRandom.current().nextInt(11) + 10;
-            System.out.println(type + " " + power + " " + price + " " + duration);
             return new RegenerationPotion(
                 "Regeneration Potion",
                 price,

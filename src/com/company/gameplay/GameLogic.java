@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import static com.company.Main.*;
 import static com.company.gameplay.ControllerFactory.getSuitableController;
-import static com.company.gameplay.EffectsController.getLavaColor;
+import static com.company.gameplay.LavaEffectController.getLavaColor;
 
 public class GameLogic
 {
@@ -72,7 +72,7 @@ public class GameLogic
     public static void startGame() {
         refreshMap();
 
-        gamePlayControllers.add(new EffectsController());
+        gamePlayControllers.add(new LavaEffectController());
 
         gamePlayControllers.add(new HeroController(hero));
 
@@ -283,6 +283,7 @@ public class GameLogic
                 "O - open chest | I - open inventory"
         ));
 
+        // Draw inventory and chest
         if (isOpenedInventory) {
             stringsToDraw.addAll(List.of(
                     String.valueOf(Symbols.SINGLE_LINE_HORIZONTAL).repeat(stringsToDraw.stream().mapToInt((s) -> s.replaceAll("\u001b\\[[0-9;]*m", "").length()).max().orElse(0) + 2),

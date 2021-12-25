@@ -7,6 +7,7 @@ import com.company.objects.creatures.Status;
 import com.googlecode.lanterna.input.KeyType;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.Main.*;
@@ -56,26 +57,21 @@ public class HeroController extends Controller
                 }
             }
         }
-        else {
-            if(pressedKey != null) {
-                if(pressedKey.getKeyType() == KeyType.Escape || pressedKey.getKeyType() == KeyType.EOF)
-                    cancel();
-                else
-                    switch (pressedKey.getKeyType()) {
-                        case ArrowUp -> hero.move(-1, 0);
-                        case ArrowRight -> hero.move(0, 1);
-                        case ArrowDown -> hero.move(1, 0);
-                        case ArrowLeft -> hero.move(0, -1);
-                        case Character -> {
-                            if(pressedKey.getCharacter() == 'd' || pressedKey.getCharacter() == 'в')
-                                hero.attackRandomTarget();
-                            else if(pressedKey.getCharacter() == 'n' || pressedKey.getCharacter() == 'т') {
-                                System.out.println("Alive");
-                            }
-                        }
-                    }
-                pressedKey = null;
+        else if(pressedKey != null) {
+            switch (pressedKey.getKeyType()) {
+                case ArrowUp -> hero.move(-1, 0);
+                case ArrowRight -> hero.move(0, 1);
+                case ArrowDown -> hero.move(1, 0);
+                case ArrowLeft -> hero.move(0, -1);
+                case Character -> {
+                    if(pressedKey.getCharacter() == 'd' || pressedKey.getCharacter() == 'в')
+                        hero.attackRandomTarget();
+                }
             }
+            pressedKey = null;
+            /*if (List.of(KeyType.ArrowUp, KeyType.ArrowRight, KeyType.ArrowDown, KeyType.ArrowLeft)
+                    .contains(pressedKey.getKeyType()) || (pressedKey.getKeyType() == KeyType.Character
+                    && List.of('d', 'в').contains(pressedKey.getCharacter()))) pressedKey = null;*/
         }
     }
 }

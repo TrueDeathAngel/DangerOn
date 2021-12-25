@@ -17,10 +17,11 @@ public abstract class LongTermPotion extends Potion {
         Controller effectController = new Controller(1000) {
             @Override
             public void step() {
-                if (currentSecond++ > duration) cancel();
+                if (currentSecond++ > duration) {
+                    gamePlayControllers.remove(this);
+                    cancel();
+                }
                 else doEffect();
-
-                System.out.println(duration + " " + power);
             }
         };
 

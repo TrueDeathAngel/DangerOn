@@ -25,8 +25,7 @@ public class KeyController extends Controller
         }
         try {
             KeyStroke keyStroke= screen.pollInput();
-            if (keyStroke != null)
-            {
+            if (keyStroke != null) {
                 if (keyStroke.getKeyType() == KeyType.EOF) gameOver = true;
                 pressedKey = keyStroke;
 
@@ -51,8 +50,6 @@ public class KeyController extends Controller
                                     refreshMap();
                                 }
                                 else if (pressedKey.getCharacter() == 'f' || pressedKey.getCharacter() == 'а') noWarFog = !noWarFog;
-                                else if (pressedKey.getCharacter() == 'z' || pressedKey.getCharacter() == 'я') gamePlayControllers.forEach(Controller::resume);
-                                else if (pressedKey.getCharacter() == 'n' || pressedKey.getCharacter() == 'т') gamePlayControllers.forEach(System.out::println);
                         }
                     }
             }

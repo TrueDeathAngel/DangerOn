@@ -48,16 +48,20 @@ public class InventoryMenu extends Controller {
                 }
                 case Character -> {
                     if (chest != null && (pressedKey.getCharacter() == 's' || pressedKey.getCharacter() == 'ы')) {
-                        if (inventoryWindowIsActive && hero.inventory.isNotEmpty()) {
-                            Item item = hero.inventory.getByIndex(inventoryCursorPosition);
-                            hero.inventory.remove(inventoryCursorPosition);
-                            chest.inventory.addItem(item);
-                        } else if (chest.inventory.isNotEmpty()) {
-                            Item item = chest.inventory.getByIndex(inventoryCursorPosition);
-                            chest.inventory.remove(inventoryCursorPosition);
-                            hero.inventory.addItem(item);
-                        }
-                        inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
+                        if (inventoryWindowIsActive) {
+                            if (hero.inventory.isNotEmpty() && chest.inventory.isNotFull()) {
+                                Item item = hero.inventory.getByIndex(inventoryCursorPosition);
+                                hero.inventory.remove(inventoryCursorPosition);
+                                chest.inventory.addItem(item);
+                                inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
+                            }
+                        } else
+                            if (chest.inventory.isNotEmpty() && hero.inventory.isNotFull()) {
+                                Item item = chest.inventory.getByIndex(inventoryCursorPosition);
+                                chest.inventory.remove(inventoryCursorPosition);
+                                hero.inventory.addItem(item);
+                                inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
+                            }
                     } else if (pressedKey.getCharacter() == 'e' || pressedKey.getCharacter() == 'у') {
                         Container container;
                         if (inventoryWindowIsActive)

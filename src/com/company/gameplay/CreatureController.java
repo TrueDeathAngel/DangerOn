@@ -28,7 +28,7 @@ public class CreatureController extends Controller {
             switch (creature.getStatus()) {
                 case IDLE -> { if(ThreadLocalRandom.current().nextInt(4) == 3) creature.move(); }
                 case CHASE -> creature.moveToTarget(hero);
-                case FIGHT -> hero.receiveDamage(creature.getAttackPower());
+                case FIGHT -> hero.receiveDamage(creature.getBasicDamage());
             }
         }
     }

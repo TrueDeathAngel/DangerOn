@@ -15,6 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static com.company.Main.map;
 import static com.company.gameplay.GameLogic.*;
 import static com.company.gameplay.GameLogic.hero;
+import static com.company.recources.GameResources.chestModels;
 
 public class Creature extends GameEntity
 {
@@ -49,9 +50,9 @@ public class Creature extends GameEntity
 
     public int getMaxHitPoints() { return maxHitPoints; }
 
-    public int getAttackPower() { return attackPower; }
+    public int getBasicDamage() { return attackPower; }
 
-    public int getDamage() { return ThreadLocalRandom.current().nextInt(attackPower) + 1; }
+    public int getDamage() { return (int) (getBasicDamage() * (1 + 0.01 * (ThreadLocalRandom.current().nextInt(31) - 15))); }
 
     public int getDefencePoints() { return defencePoints; }
 
@@ -61,7 +62,7 @@ public class Creature extends GameEntity
 
     @Override
     public void receiveDamage(int damage) {
-        hitPoints -= Math.max(damage - getDefencePoints(), 1);
+        hitPoints -= Math.max(damage - (int) (getDefencePoints() * 0.5), 1);
     }
 
     public void instantRecovery() { hitPoints = maxHitPoints; }
@@ -144,10 +145,7 @@ public class Creature extends GameEntity
         Chest chest = new Chest(
                 getName() + " items' chest",
                 10,
-                new TextCharacter(
-                        '†',
-                        TextColor.ANSI.WHITE,
-                        TextColor.ANSI.DEFAULT));
+                chestModels.get(Chest.ChestTypes.GRAVE));
         chest.setPosition(position);
         chest.underCell = underCell;
         chest.inventory.addAllItems(getLoot());

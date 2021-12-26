@@ -4,7 +4,7 @@ public class Weapon extends Item
 {
     private int requiredLevel = 1;
     private int attackPower = 1;
-    private int attackRange = 1;
+    private double criticalAttackChance = 0.04;
 
     public Weapon(String name, int attackPower, int price, int requiredLevel)
     {

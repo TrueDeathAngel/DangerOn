@@ -32,6 +32,16 @@ public class MapFactory
         return new Point(heroBaseBottomRight.x - 1, horizontalDoorPosition);
     }
 
+    public static Point getHeroBaseTopLeft() {
+        return heroBaseTopLeft;
+    }
+
+    public static Point getHeroBaseBottomRight() {
+        return heroBaseBottomRight;
+    }
+
+    public static Point getHeroChestPosition() { return new Point(heroBaseTopLeft.x + 1, heroBaseBottomRight.y - 1); }
+
     public static CellTypes[][] createMap() {
         mapHeight = ThreadLocalRandom.current().nextInt(5) + 2;
         mapWidth = ThreadLocalRandom.current().nextInt(5) + 3;

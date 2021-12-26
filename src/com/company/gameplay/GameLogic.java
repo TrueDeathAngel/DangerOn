@@ -1,5 +1,6 @@
 package com.company.gameplay;
 
+import com.company.map.CellTypes;
 import com.company.objects.GameEntity;
 import com.company.objects.GameObjectFactory;
 import com.company.objects.creatures.*;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 import static com.company.Main.*;
 import static com.company.gameplay.ControllerFactory.getSuitableController;
 import static com.company.gameplay.LavaEffectController.getLavaColor;
+import static com.company.map.MapFactory.*;
+import static com.company.recources.GameResources.chestModels;
 
 public class GameLogic
 {
@@ -53,6 +56,12 @@ public class GameLogic
     public static boolean isAdmin = false;
     private static boolean[][] visibleCells;
     public static boolean noWarFog = false;
+
+    public static final Chest heroChest = new Chest(
+            "Your chest",
+            10,
+            chestModels.get(Chest.ChestTypes.HERO)
+    );
 
     public static boolean isOpenedInventory = false;
     public static Chest openedChest;
@@ -83,6 +92,9 @@ public class GameLogic
             }
         });
 
+        heroChest.setPosition(getHeroChestPosition());
+        heroChest.underCell = CellTypes.SAFE_AREA;
+
         keyController.start();
 
         gamePlayControllers.forEach(Controller::start);
@@ -104,6 +116,8 @@ public class GameLogic
         floorEntitiesControllers.forEach(Controller::cancel);
         floorEntitiesControllers.clear();
         floorEntities.clear();
+
+        map[getHeroBaseTopLeft().x + 1][getHeroBaseBottomRight().y - 1] = CellTypes.CHEST;
 
         int numberOfEnemies = ThreadLocalRandom.current().nextInt(MapFactory.getNumberOfRooms() * 10) + 3;
 
@@ -140,6 +154,27 @@ public class GameLogic
                                 creature.model
                         );
                 });
+
+        screen.setCharacter(
+                Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2) + Math.min(heroViewZone.y / 2, hero.getPosition().y) + 1,
+                Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2) + Math.min(heroViewZone.x / 2, hero.getPosition().x) + 2,
+                hero.model);
+
+        if(heroChest.getPosition() != null
+                && heroChest.getPosition().y >= Math.min(hero.getPosition().y - heroViewZone.y / 2, map[0].length - heroViewZone.y)
+                && heroChest.getPosition().y < Math.max(hero.getPosition().y + heroViewZone.y / 2, heroViewZone.y)
+                && heroChest.getPosition().x >= Math.min(hero.getPosition().x - heroViewZone.x / 2, map.length - heroViewZone.x)
+                && heroChest.getPosition().x < Math.max(hero.getPosition().x + heroViewZone.x / 2, heroViewZone.x)
+                && (noWarFog || visibleCells[heroChest.getPosition().x][heroChest.getPosition().y]))
+            screen.setCharacter(
+                    Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2)
+                            + Math.min(heroViewZone.y / 2, hero.getPosition().y)
+                            + (heroChest.getPosition().y - hero.getPosition().y) + 1,
+                    Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2)
+                            + Math.min(heroViewZone.x / 2, hero.getPosition().x)
+                            + (heroChest.getPosition().x - hero.getPosition().x) + 2,
+                    heroChest.model
+            );
     }
 
     public static void drawMap() {
@@ -178,11 +213,6 @@ public class GameLogic
         drawRectangle(new TerminalPosition(0, 0), new TerminalSize(heroViewZone.y + 2, heroViewZone.x + 2), "Floor #" + floorNumber);
 
         try { drawFloorEntities(); } catch (ConcurrentModificationException ignored) {}
-
-        screen.setCharacter(
-                Math.max(0, hero.getPosition().y - map[0].length + heroViewZone.y / 2) + Math.min(heroViewZone.y / 2, hero.getPosition().y) + 1,
-                Math.max(0, hero.getPosition().x - map.length + heroViewZone.x / 2) + Math.min(heroViewZone.x / 2, hero.getPosition().x) + 2,
-                hero.model);
     }
 
     private static void drawRectangle(TerminalPosition topLeft, TerminalSize size) {
@@ -266,7 +296,7 @@ public class GameLogic
                         + hero.getMaxHitPoints()
                         + ')',
                 "Defence Points: " + hero.getDefencePoints(),
-                "Attack Power: " + (hero.getAttackPower() + hero.getWeaponAttackPower()),
+                "Attack Power: " + (hero.getBasicDamage() + hero.getWeaponAttackPower()),
                 "Current Level: " + hero.getCurrentLevel(),
                 "Experience Points: " + hero.getExperiencePoints() + '/' + hero.getExperiencePointsForNextLevel(),
                 "Number of enemies: " + floorEntities.size(),

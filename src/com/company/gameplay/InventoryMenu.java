@@ -49,19 +49,21 @@ public class InventoryMenu extends Controller {
                 case Character -> {
                     if (chest != null && (pressedKey.getCharacter() == 's' || pressedKey.getCharacter() == 'ы')) {
                         if (inventoryWindowIsActive) {
-                            if (hero.inventory.isNotEmpty() && chest.inventory.isNotFull()) {
-                                Item item = hero.inventory.getByIndex(inventoryCursorPosition);
-                                hero.inventory.remove(inventoryCursorPosition);
-                                chest.inventory.addItem(item);
-                                inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
-                            }
+                            if (hero.inventory.isNotEmpty())
+                                if (chest.inventory.isNotFull()) {
+                                    Item item = hero.inventory.getByIndex(inventoryCursorPosition);
+                                    hero.inventory.remove(inventoryCursorPosition);
+                                    chest.inventory.addItem(item);
+                                    inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
+                                } else addToLog(chest.getName() + " is full!");
                         } else
-                            if (chest.inventory.isNotEmpty() && hero.inventory.isNotFull()) {
+                            if (chest.inventory.isNotEmpty())
+                                if (hero.inventory.isNotFull()) {
                                 Item item = chest.inventory.getByIndex(inventoryCursorPosition);
                                 chest.inventory.remove(inventoryCursorPosition);
                                 hero.inventory.addItem(item);
                                 inventoryCursorPosition = Math.max(inventoryCursorPosition - 1, 0);
-                            }
+                                } else addToLog(hero.inventory.getName() + " is full!");
                     } else if (pressedKey.getCharacter() == 'e' || pressedKey.getCharacter() == 'у') {
                         Container container;
                         if (inventoryWindowIsActive)

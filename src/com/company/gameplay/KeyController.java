@@ -39,7 +39,9 @@ public class KeyController extends Controller
                                 hero.openInventoryMenu();
                             }
                             else if(pressedKey.getCharacter() == 'o' || pressedKey.getCharacter() == 'щ') {
-                                floorEntities.stream()
+                                if (heroChest.isCloseToHero()) heroChest.open();
+                                else
+                                    floorEntities.stream()
                                         .filter(floorEntity -> floorEntity.getEntityType() == CellTypes.CHEST && floorEntity.isCloseToHero())
                                         .findAny()
                                         .ifPresent(chest -> ((Chest) chest).open());

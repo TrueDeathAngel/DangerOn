@@ -8,8 +8,6 @@ import com.googlecode.lanterna.TextColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ThreadLocalRandom;
-
 import static com.company.gameplay.GameLogic.*;
 
 public class Mob extends Creature {
@@ -32,10 +30,8 @@ public class Mob extends Creature {
     }
 
     @Override
-    public int getDamage() {
-        int damage = getAttackPower();
-        if(weapon != null) damage += ThreadLocalRandom.current().nextInt(weapon.getAttackPower());
-        return damage;
+    public int getBasicDamage() {
+        return super.getBasicDamage() + weapon.getAttackPower();
     }
 
     @Override

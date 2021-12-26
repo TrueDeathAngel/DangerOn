@@ -8,25 +8,12 @@ import com.company.objects.items.Weapon;
 import com.company.objects.items.potions.HealingPotion;
 import com.company.objects.items.potions.Potion;
 import com.company.objects.items.potions.RegenerationPotion;
-import com.googlecode.lanterna.TextCharacter;
-import com.googlecode.lanterna.TextColor;
-
 import java.util.concurrent.ThreadLocalRandom;
 
 import static com.company.gameplay.GameLogic.floorNumber;
+import static com.company.recources.GameResources.*;
 
-public class GameObjectFactory
-{
-    public static final String[] mobNames = {"Zombie", "Ogre", "Skeleton", "Cyclops", "Goblin", "Centaurs", "Fauns", "Minotaur", "Demon", "Imp"};
-    static String[] weaponNames = {"Sword", "Axe", "Pickaxe", "Bow", "Crossbow", "Spear", "Dagger", "Mace", "Hammer", "Sickle"};
-    static String[] chestNames = {"Small", "Regular", "Big"};
-    static TextCharacter[] chestModels = {
-            new TextCharacter(
-                    '☐',
-                    TextColor.ANSI.WHITE,
-                    TextColor.ANSI.DEFAULT)
-    };
-
+public class GameObjectFactory {
     public static Creature spawnCreature() {
         return new Creature
                 (
@@ -84,7 +71,7 @@ public class GameObjectFactory
         Chest chest = new Chest(
                 chestNames[size] + " chest",
                 (size + 1) * 2,
-                chestModels[0]);
+                chestModels.get(Chest.ChestTypes.REGULAR));
         for (int i = 0; i < (size + 1) * 2; i++) {
             chest.inventory.addItem(spawnRandomItem());
         }

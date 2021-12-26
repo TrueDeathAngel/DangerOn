@@ -36,8 +36,13 @@ public class Chest extends GameEntity {
     }
 
     @Override
-    public ArrayList<CellTypes> getAllowedCells()
-    {
+    public ArrayList<CellTypes> getAllowedCells() {
         return new ArrayList<>(List.of(CellTypes.EMPTY, CellTypes.SAFE_AREA));
+    }
+
+    public enum ChestTypes {
+        REGULAR,
+        GRAVE,
+        HERO
     }
 }
